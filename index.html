@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>庄腳 JenKa · 每日記帳</title>
+<style>
+  :root{
+    --accent:#C96A43;
+    --ink:#2B2622;
+    --sub:#8A7F6E;
+    --bg:#F5F1EA;
+    --card:#FFFFFF;
+    --line:#E7DFD2;
+    --soft:#FBF8F3;
+    --good:#4F7A57;
+    --goodBg:#E7F1E5;
+    --warnBg:#FBF3E9;
+    --warnLine:#DDB98B;
+    --warnInk:#7A5B3A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);}
+  .app{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;}
+  header{padding:16px 20px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:5;}
+  header .title{font-size:12px;color:var(--sub);font-weight:700;letter-spacing:.5px;}
+  header .date{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  header .date button{border:1px solid var(--line);background:#fff;border-radius:8px;width:30px;height:30px;font-size:16px;font-weight:800;color:var(--sub);}
+  .badge{font-size:13px;font-weight:700;background:var(--goodBg);color:var(--good);padding:8px 14px;border-radius:12px;}
+  .badge.warn{background:#FBECE8;color:#B3452C;}
+  .badge.neutral{background:#F6E9DD;color:#A8825F;}
+  main{flex-grow:1;display:grid;grid-template-columns:repeat(3,minmax(280px,1fr));gap:16px;padding:18px 20px 120px;}
+  @media (max-width:900px){ main{grid-template-columns:1fr;} }
+  .col{display:flex;flex-direction:column;gap:12px;}
+  .col h2{font-size:15px;font-weight:800;margin:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:9px;}
+  .card.warn{background:var(--warnBg);border:1.5px dashed var(--warnLine);}
+  .row-between{display:flex;align-items:center;justify-content:space-between;}
+  .slotname{font-size:14px;font-weight:800;}
+  .scanbtn{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:var(--sub);background:var(--soft);border:1px solid var(--line);padding:4px 8px;border-radius:999px;}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .metric{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 8px;cursor:pointer;}
+  .metric .lbl{font-size:10px;color:var(--sub);font-weight:700;}
+  .metric .amt{font-size:14px;font-weight:800;}
+  .metric .unit{font-size:10px;color:#A8825F;font-weight:700;}
+  .hint{font-size:10px;color:#B0A18C;}
+  .sandwich-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .sandwich-grid .box{background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer;}
+  .sandwich-grid .box .lbl{font-size:10px;color:var(--warnInk);font-weight:700;}
+  .sandwich-grid .box .val{font-size:15px;font-weight:800;color:var(--warnInk);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1px solid #D9CEBC;background:#FCFAF6;border-radius:10px;font-weight:700;padding:10px 14px;font-size:13px;cursor:pointer;}
+  .chip.dashed{border:1.5px dashed #B7ACC8;background:#fff;color:var(--sub);}
+  .plist{display:flex;flex-direction:column;gap:8px;}
+  .pitem{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--soft);border-radius:10px;}
+  .pitem .name{font-size:14px;font-weight:800;}
+  .pitem .cat{font-size:11px;color:var(--sub);}
+  .pitem .amt{font-size:15px;font-weight:800;margin-right:8px;}
+  .pitem .del{border:none;background:none;color:#B0A18C;font-size:16px;cursor:pointer;}
+  .cashrow{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;cursor:pointer;}
+  .cashrow .d{font-size:13px;font-weight:800;}
+  .cashrow .qty{font-size:15px;font-weight:800;}
+  .cashrow .sub{font-size:13px;font-weight:800;color:var(--sub);}
+  .divider{height:1px;background:var(--line);margin:2px 0;}
+  .totalrow{display:flex;align-items:center;justify-content:space-between;padding-top:4px;}
+  .totalrow .l{font-size:13px;font-weight:800;}
+  .totalrow .v{font-size:18px;font-weight:800;}
+  footer{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -6px 16px rgba(43,38,34,.06);flex-wrap:wrap;}
+  .submitbtn{padding:15px 26px;border-radius:12px;border:none;font-size:15px;font-weight:800;background:var(--accent);color:#fff;cursor:pointer;}
+  .submitbtn:disabled{opacity:.5;cursor:default;}
+  /* keypad sheet */
+  .sheet-backdrop{position:fixed;inset:0;background:rgba(43,38,34,.35);display:none;align-items:flex-end;justify-content:center;z-index:20;}
+  .sheet-backdrop.open{display:flex;}
+  .sheet{background:#fff;width:100%;max-width:420px;border-radius:18px 18px 0 0;padding:16px 18px 22px;box-shadow:0 -12px 30px rgba(0,0,0,.18);}
+  .sheet .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .sheet .head .lbl{font-size:13px;color:var(--sub);font-weight:700;}
+  .sheet .display{font-size:28px;font-weight:800;text-align:right;margin-bottom:12px;min-height:34px;}
+  .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .keys button{padding:16px 0;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:700;}
+  .keys button.confirm{background:var(--accent);color:#fff;border:none;font-size:15px;}
+  .keys button.clear{background:#FCFAF6;color:var(--sub);font-size:13px;}
+  input,textarea{font-family:inherit;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="title">庄腳 JenKa · 每日記帳</div>
+      <div class="date">
+        <button id="prevDay">‹</button>
+        <span id="dateLabel">—</span>
+        <button id="nextDay">›</button>
+      </div>
+    </div>
+    <div id="statusBadge" class="badge neutral">尚未送出</div>
+  </header>
+
+  <main>
+    <div class="col">
+      <h2>時段營業額</h2>
+
+      <div class="card warn">
+        <div class="row-between">
+          <div class="slotname" style="color:var(--warnInk);">🥪 現場三明治（手寫加總）</div>
+        </div>
+        <div class="sandwich-grid">
+          <div class="box" data-field="sandwich.units" data-suffix=" 份">
+            <div class="lbl">份數</div>
+            <div class="val" id="v-sandwich-units">___ 份</div>
+          </div>
+          <div class="box" data-field="sandwich.amount" data-prefix="$">
+            <div class="lbl">金額</div>
+            <div class="val" id="v-sandwich-amount">$ ___</div>
+          </div>
+        </div>
+        <div class="hint" style="color:#A8825F;">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡，會併入現金總額。</div>
+      </div>
+
+      <div id="slots"></div>
+    </div>
+
+    <div class="col">
+      <h2>今日進貨</h2>
+      <div class="card">
+        <div class="chips" id="vendorChips"></div>
+        <div class="divider"></div>
+        <div class="plist" id="purchaseList"></div>
+        <div class="hint">點廠商按鈕輸入金額，會自動加入上面清單；點清單項目右邊 × 可以刪除。</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <h2>錢盒現金</h2>
+      <div class="card" id="cashboxCard"></div>
+      <button class="submitbtn" id="submitBtn">送出今日帳目</button>
+    </div>
+  </main>
+
+  <footer>
+    <div>
+      <div style="font-size:12px;color:var(--sub);font-weight:700;">今日現金核對</div>
+      <div style="font-size:13px;color:var(--sub);" id="footerHint">填完全部欄位後送出</div>
+    </div>
+    <div class="badge neutral" id="reconcileBadge">尚未核對</div>
+  </footer>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop">
+  <div class="sheet">
+    <div class="head">
+      <div class="lbl" id="sheetLabel">輸入數字</div>
+      <div class="lbl" id="sheetClose" style="cursor:pointer;">✕</div>
+    </div>
+    <div class="display" id="sheetDisplay">0</div>
+    <div class="keys">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button class="clear" data-k="clear">清除</button><button data-k="0">0</button>
+      <button class="confirm" data-k="confirm">確認</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ 設定：把 Apps Script 部署後的網址貼在這裡 ============
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycby8ATgPpZ7SJR3I6q1vKj13bZJ_yOk9ZMB0GUyqZSV3AZfXApVGiErsVZBAUuMcOvXk/exec"
+};
+// ===================================================================
+
+const SLOT_META = [
+  { key: 0, name: "早餐 6:30–9:00" },
+  { key: 1, name: "早午 9:00–11:30" },
+  { key: 2, name: "午餐 11:30–13:00" }
+];
+const CHANNELS = [
+  { key: "cash", label: "現金" },
+  { key: "line", label: "Line" },
+  { key: "uber", label: "Uber" }
+];
+const FALLBACK_VENDORS = ["晨起","蛋商","廣弘","毓品","肉商","蔬果","一豆","光泉","南北貨","非餅尋嚐","慶樺","好市多","外帶餐具"];
+const CASHBOX_DENOMS = [1000,500,100,50,10,5,1];
+
+function emptySlot(){ return { cashUnits:0, cashAmount:0, lineUnits:0, lineAmount:0, uberUnits:0, uberAmount:0 }; }
+
+function todayDay(){
+  const now = new Date();
+  return String(now.getDate());
+}
+
+let state = {
+  day: todayDay(),
+  slots: [emptySlot(), emptySlot(), emptySlot()],
+  sandwich: { units:0, amount:0 },
+  purchases: [],
+  cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
+};
+
+const DRAFT_KEY = "jenka-bookkeeping-draft";
+function saveDraft(){
+  try { localStorage.setItem(DRAFT_KEY + "-" + state.day, JSON.stringify(state)); } catch(e){}
+}
+function loadDraft(day){
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY + "-" + day);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return null;
+}
+
+function fmtMoney(n){ return "$" + Number(n||0).toLocaleString(); }
+
+// ---------- 畫面：時段卡片 ----------
+function renderSlots(){
+  const wrap = document.getElementById("slots");
+  wrap.innerHTML = "";
+  SLOT_META.forEach(meta => {
+    const s = state.slots[meta.key];
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="row-between">
+        <div class="slotname">${meta.name}</div>
+      </div>
+      <div class="metrics">
+        ${CHANNELS.map(c => `
+          <div class="metric" data-slot="${meta.key}" data-channel="${c.key}">
+            <div class="lbl">${c.label}</div>
+            <div class="amt" id="amt-${meta.key}-${c.key}">${fmtMoney(s[c.key+"Amount"])}</div>
+            <div class="unit" id="unit-${meta.key}-${c.key}">${s[c.key+"Units"]||0} 單</div>
+          </div>`).join("")}
+      </div>
+      <div class="hint">點欄位可直接輸入單量與金額（會先問單量、再問金額）。</div>
+    `;
+    wrap.appendChild(card);
+  });
+  // bind clicks
+  wrap.querySelectorAll(".metric").forEach(el => {
+    el.addEventListener("click", () => {
+      const slotIdx = Number(el.dataset.slot);
+      const ch = el.dataset.channel;
+      openChannelEntry(slotIdx, ch);
+    });
+  });
+}
+
+function openChannelEntry(slotIdx, ch){
+  const meta = SLOT_META[slotIdx];
+  openKeypad({
+    label: meta.name + " · " + ({cash:"現金",line:"Line",uber:"Uber"})[ch] + "單量",
+    initial: state.slots[slotIdx][ch+"Units"],
+    onConfirm(units){
+      state.slots[slotIdx][ch+"Units"] = units;
+      openKeypad({
+        label: meta.name + " · " + ({cash:"現金",line:"Line",uber:"Uber"})[ch] + "金額",
+        initial: state.slots[slotIdx][ch+"Amount"],
+        prefix: "$",
+        onConfirm(amount){
+          state.slots[slotIdx][ch+"Amount"] = amount;
+          document.getElementById(`amt-${slotIdx}-${ch}`).textContent = fmtMoney(amount);
+          document.getElementById(`unit-${slotIdx}-${ch}`).textContent = units + " 單";
+          saveDraft();
+        }
+      });
+    }
+  });
+}
+
+// ---------- 畫面：三明治 ----------
+function renderSandwich(){
+  document.getElementById("v-sandwich-units").textContent = state.sandwich.units ? state.sandwich.units + " 份" : "___ 份";
+  document.getElementById("v-sandwich-amount").textContent = state.sandwich.amount ? fmtMoney(state.sandwich.amount) : "$ ___";
+}
+document.querySelectorAll("[data-field^='sandwich']").forEach(el => {
+  el.addEventListener("click", () => {
+    const field = el.dataset.field.split(".")[1]; // units | amount
+    openKeypad({
+      label: "現場三明治 · " + (field === "units" ? "份數" : "金額"),
+      initial: state.sandwich[field],
+      prefix: field === "amount" ? "$" : "",
+      onConfirm(v){
+        state.sandwich[field] = v;
+        renderSandwich();
+        saveDraft();
+      }
+    });
+  });
+});
+
+// ---------- 畫面：進貨廠商 ----------
+function renderVendorChips(vendors){
+  const wrap = document.getElementById("vendorChips");
+  wrap.innerHTML = "";
+  vendors.forEach(v => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.textContent = v;
+    chip.addEventListener("click", () => openPurchaseEntry(v));
+    wrap.appendChild(chip);
+  });
+  const other = document.createElement("div");
+  other.className = "chip dashed";
+  other.textContent = "+ 其他廠商";
+  other.addEventListener("click", () => {
+    const name = prompt("請輸入廠商名稱：");
+    if (name && name.trim()) openPurchaseEntry(name.trim());
+  });
+  wrap.appendChild(other);
+}
+
+function openPurchaseEntry(vendor){
+  openKeypad({
+    label: vendor + " · 金額",
+    initial: 0,
+    prefix: "$",
+    onConfirm(amount){
+      if (amount <= 0) return;
+      state.purchases.push({ vendor, detail:"", note:"", amount });
+      renderPurchaseList();
+      saveDraft();
+    }
+  });
+}
+
+function renderPurchaseList(){
+  const wrap = document.getElementById("purchaseList");
+  wrap.innerHTML = "";
+  state.purchases.forEach((p, idx) => {
+    const row = document.createElement("div");
+    row.className = "pitem";
+    row.innerHTML = `
+      <div>
+        <div class="name">${p.vendor}${p.detail ? " · " + p.detail : ""}</div>
+        <div class="cat">銷貨成本</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <div class="amt">${fmtMoney(p.amount)}</div>
+        <button class="del">✕</button>
+      </div>
+    `;
+    row.querySelector(".del").addEventListener("click", () => {
+      state.purchases.splice(idx, 1);
+      renderPurchaseList();
+      saveDraft();
+    });
+    wrap.appendChild(row);
+  });
+  if (state.purchases.length >= 9) {
+    const warn = document.createElement("div");
+    warn.className = "hint";
+    warn.style.color = "#B3452C";
+    warn.textContent = "已達今日進貨上限（9筆），如需更多請合併同廠商項目。";
+    wrap.appendChild(warn);
+  }
+}
+
+// ---------- 畫面：錢盒現金 ----------
+function renderCashbox(){
+  const wrap = document.getElementById("cashboxCard");
+  wrap.innerHTML = "";
+  CASHBOX_DENOMS.forEach(d => {
+    const qty = state.cashbox[String(d)] || 0;
+    const row = document.createElement("div");
+    row.className = "cashrow";
+    row.dataset.denom = d;
+    row.innerHTML = `
+      <div class="d">$${d.toLocaleString()} 面額</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="qty" id="qty-${d}">${qty} 張</div>
+        <div class="sub" id="sub-${d}">= ${fmtMoney(qty*d)}</div>
+      </div>
+    `;
+    row.addEventListener("click", () => {
+      openKeypad({
+        label: "$" + d.toLocaleString() + " 面額 · 張數",
+        initial: state.cashbox[String(d)],
+        onConfirm(v){
+          state.cashbox[String(d)] = v;
+          document.getElementById(`qty-${d}`).textContent = v + " 張";
+          document.getElementById(`sub-${d}`).textContent = "= " + fmtMoney(v*d);
+          updateCashboxTotal();
+          saveDraft();
+        }
+      });
+    });
+    wrap.appendChild(row);
+  });
+  const divider = document.createElement("div");
+  divider.className = "divider";
+  wrap.appendChild(divider);
+  const total = document.createElement("div");
+  total.className = "totalrow";
+  total.innerHTML = `<div class="l">錢盒總額</div><div class="v" id="cashboxTotal">$0</div>`;
+  wrap.appendChild(total);
+  updateCashboxTotal();
+}
+function updateCashboxTotal(){
+  let sum = 0;
+  CASHBOX_DENOMS.forEach(d => sum += (state.cashbox[String(d)]||0) * d);
+  const el = document.getElementById("cashboxTotal");
+  if (el) el.textContent = fmtMoney(sum);
+}
+
+// ---------- 共用數字鍵盤 ----------
+let keypadCtx = null;
+function openKeypad({label, initial, prefix, suffix, onConfirm}){
+  keypadCtx = { value: String(initial || ""), onConfirm, prefix: prefix||"", suffix: suffix||"" };
+  document.getElementById("sheetLabel").textContent = label;
+  updateKeypadDisplay();
+  document.getElementById("sheetBackdrop").classList.add("open");
+}
+function updateKeypadDisplay(){
+  const v = keypadCtx.value === "" ? "0" : keypadCtx.value;
+  document.getElementById("sheetDisplay").textContent = keypadCtx.prefix + Number(v).toLocaleString() + keypadCtx.suffix;
+}
+function closeKeypad(){
+  document.getElementById("sheetBackdrop").classList.remove("open");
+  keypadCtx = null;
+}
+document.getElementById("sheetClose").addEventListener("click", closeKeypad);
+document.getElementById("sheetBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "sheetBackdrop") closeKeypad();
+});
+document.querySelectorAll(".keys button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (!keypadCtx) return;
+    const k = btn.dataset.k;
+    if (k === "clear") { keypadCtx.value = ""; updateKeypadDisplay(); return; }
+    if (k === "confirm") {
+      const val = Number(keypadCtx.value || 0);
+      const cb = keypadCtx.onConfirm;
+      closeKeypad();
+      cb(val);
+      return;
+    }
+    if (keypadCtx.value.length >= 7) return; // 避免誤觸過長數字
+    keypadCtx.value = (keypadCtx.value === "0" ? "" : keypadCtx.value) + k;
+    updateKeypadDisplay();
+  });
+});
+
+// ---------- 送出 ----------
+document.getElementById("submitBtn").addEventListener("click", submitEntry);
+async function submitEntry(){
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true;
+  btn.textContent = "送出中…";
+  try {
+    const res = await fetch(CONFIG.API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // 避免瀏覽器預檢請求，Apps Script 不支援 OPTIONS
+      body: JSON.stringify(state)
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      alert("送出失敗：" + data.error);
+      btn.disabled = false;
+      btn.textContent = "送出今日帳目";
+      return;
+    }
+    const badge = document.getElementById("statusBadge");
+    badge.textContent = "已送出";
+    badge.className = "badge";
+    const reconcile = document.getElementById("reconcileBadge");
+    reconcile.textContent = data.message;
+    reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
+    document.getElementById("footerHint").textContent = "已寫入今日分頁，錢盒總額 " + fmtMoney(data.cashboxTotal);
+    btn.textContent = "已送出";
+  } catch (err) {
+    alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
+    btn.disabled = false;
+    btn.textContent = "送出今日帳目";
+  }
+}
+
+// ---------- 換日期 ----------
+function refreshDateLabel(){
+  const d = new Date();
+  d.setDate(Number(state.day));
+  const weekday = ["日","一","二","三","四","五","六"][d.getDay()];
+  document.getElementById("dateLabel").textContent = (d.getMonth()+1) + "月" + state.day + "日（週" + weekday + "）";
+}
+document.getElementById("prevDay").addEventListener("click", () => switchDay(Number(state.day) - 1));
+document.getElementById("nextDay").addEventListener("click", () => switchDay(Number(state.day) + 1));
+function switchDay(newDay){
+  if (newDay < 1 || newDay > 31) return;
+  saveDraft();
+  state.day = String(newDay);
+  const draft = loadDraft(state.day);
+  state = draft || {
+    day: String(newDay),
+    slots: [emptySlot(), emptySlot(), emptySlot()],
+    sandwich: { units:0, amount:0 },
+    purchases: [],
+    cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
+  };
+  renderAll();
+}
+
+function renderAll(){
+  refreshDateLabel();
+  renderSlots();
+  renderSandwich();
+  renderPurchaseList();
+  renderCashbox();
+}
+
+// ---------- 初始化 ----------
+async function init(){
+  const draft = loadDraft(state.day);
+  if (draft) state = draft;
+  renderAll();
+
+  let vendors = FALLBACK_VENDORS;
+  try {
+    const res = await fetch(CONFIG.API_URL + "?action=vendors");
+    const data = await res.json();
+    if (data.ok && data.vendors && data.vendors.length) vendors = data.vendors;
+  } catch(e) {
+    // 離線或還沒設定好網址時，用內建的廠商清單，不影響操作
+  }
+  renderVendorChips(vendors);
+}
+init();
+</script>
+</body>
+</html>
