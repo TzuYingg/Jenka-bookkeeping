@@ -98,7 +98,7 @@
 
   <main>
     <div class="col">
-      <h2>時段營業額</h2>
+      <h2>今日營業額</h2>
 
       <div class="card warn">
         <div class="row-between">
@@ -114,10 +114,11 @@
             <div class="val" id="v-sandwich-amount">$ ___</div>
           </div>
         </div>
-        <div class="hint" style="color:#A8825F;">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡，會併入現金總額。</div>
+        <div class="hint" style="color:#A8825F;">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡留存查核用；金額記得已經算在左邊「總額」欄位裡了，不用再重複加一次。</div>
       </div>
 
       <div id="slots"></div>
+      <div class="hint">時段細分不用每天記，每週把 Uber/Line 後台匯出的訂單資料給我，我會另外整理成週報表給您參考。</div>
     </div>
 
     <div class="col">
@@ -166,24 +167,22 @@
 <script>
 // ============ 設定：把 Apps Script 部署後的網址貼在這裡 ============
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycby8ATgPpZ7SJR3I6q1vKj13bZJ_yOk9ZMB0GUyqZSV3AZfXApVGiErsVZBAUuMcOvXk/exec"
+  API_URL: "請貼上你的 Apps Script 網頁應用程式網址"
 };
 // ===================================================================
 
-const SLOT_META = [
-  { key: 0, name: "早餐 6:30–9:00" },
-  { key: 1, name: "早午 9:00–11:30" },
-  { key: 2, name: "午餐 11:30–13:00" }
-];
+// 現金不用自己算：填「總額」+ Line + Uber，現金是總額扣掉 Line、Uber 之後的餘數，
+// 跟原本試算表的公式（H=N-J-L，I=O-K-M）邏輯一致，Code.gs 那邊會用公式寫回儲存格，
+// 之後如果妳直接在 Google 試算表改總額，現金也會自動跟著重算。
 const CHANNELS = [
-  { key: "cash", label: "現金" },
+  { key: "total", label: "總額" },
   { key: "line", label: "Line" },
   { key: "uber", label: "Uber" }
 ];
 const FALLBACK_VENDORS = ["晨起","蛋商","廣弘","毓品","肉商","蔬果","一豆","光泉","南北貨","非餅尋嚐","慶樺","好市多","外帶餐具"];
 const CASHBOX_DENOMS = [1000,500,100,50,10,5,1];
 
-function emptySlot(){ return { cashUnits:0, cashAmount:0, lineUnits:0, lineAmount:0, uberUnits:0, uberAmount:0 }; }
+function emptyDaily(){ return { totalUnits:0, totalAmount:0, lineUnits:0, lineAmount:0, uberUnits:0, uberAmount:0 }; }
 
 function todayDay(){
   const now = new Date();
@@ -192,7 +191,7 @@ function todayDay(){
 
 let state = {
   day: todayDay(),
-  slots: [emptySlot(), emptySlot(), emptySlot()],
+  daily: emptyDaily(),
   sandwich: { units:0, amount:0 },
   purchases: [],
   cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
@@ -212,55 +211,63 @@ function loadDraft(day){
 
 function fmtMoney(n){ return "$" + Number(n||0).toLocaleString(); }
 
-// ---------- 畫面：時段卡片 ----------
+// ---------- 畫面：今日營業額卡片 ----------
 function renderSlots(){
   const wrap = document.getElementById("slots");
-  wrap.innerHTML = "";
-  SLOT_META.forEach(meta => {
-    const s = state.slots[meta.key];
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
+  const s = state.daily;
+  wrap.innerHTML = `
+    <div class="card">
       <div class="row-between">
-        <div class="slotname">${meta.name}</div>
+        <div class="slotname">今日總量（總額／Line／Uber）</div>
       </div>
       <div class="metrics">
         ${CHANNELS.map(c => `
-          <div class="metric" data-slot="${meta.key}" data-channel="${c.key}">
+          <div class="metric" data-channel="${c.key}">
             <div class="lbl">${c.label}</div>
-            <div class="amt" id="amt-${meta.key}-${c.key}">${fmtMoney(s[c.key+"Amount"])}</div>
-            <div class="unit" id="unit-${meta.key}-${c.key}">${s[c.key+"Units"]||0} 單</div>
+            <div class="amt" id="amt-${c.key}">${fmtMoney(s[c.key+"Amount"])}</div>
+            <div class="unit" id="unit-${c.key}">${s[c.key+"Units"]||0} 單</div>
           </div>`).join("")}
       </div>
-      <div class="hint">點欄位可直接輸入單量與金額（會先問單量、再問金額）。</div>
-    `;
-    wrap.appendChild(card);
-  });
-  // bind clicks
+      <div class="hint">點欄位可直接輸入單量與金額（會先問單量、再問金額）。現金不用填，送出後系統會自動算：總額－Line－Uber。</div>
+      <div class="divider"></div>
+      <div class="row-between">
+        <div style="font-size:12px;color:var(--sub);font-weight:700;">推算現金</div>
+        <div style="font-size:15px;font-weight:800;" id="impliedCash">$0（0 單）</div>
+      </div>
+    </div>
+  `;
   wrap.querySelectorAll(".metric").forEach(el => {
-    el.addEventListener("click", () => {
-      const slotIdx = Number(el.dataset.slot);
-      const ch = el.dataset.channel;
-      openChannelEntry(slotIdx, ch);
-    });
+    el.addEventListener("click", () => openChannelEntry(el.dataset.channel));
   });
+  updateImpliedCash();
 }
 
-function openChannelEntry(slotIdx, ch){
-  const meta = SLOT_META[slotIdx];
+function updateImpliedCash(){
+  const s = state.daily;
+  const el = document.getElementById("impliedCash");
+  if (!el) return;
+  const cashAmount = (s.totalAmount||0) - (s.lineAmount||0) - (s.uberAmount||0);
+  const cashUnits = (s.totalUnits||0) - (s.lineUnits||0) - (s.uberUnits||0);
+  el.textContent = fmtMoney(cashAmount) + "（" + cashUnits + " 單）";
+  el.style.color = cashAmount < 0 ? "#B3452C" : "var(--ink)";
+}
+
+function openChannelEntry(ch){
+  const chLabel = ({total:"總額",line:"Line",uber:"Uber"})[ch];
   openKeypad({
-    label: meta.name + " · " + ({cash:"現金",line:"Line",uber:"Uber"})[ch] + "單量",
-    initial: state.slots[slotIdx][ch+"Units"],
+    label: "今日 " + chLabel + " 單量",
+    initial: state.daily[ch+"Units"],
     onConfirm(units){
-      state.slots[slotIdx][ch+"Units"] = units;
+      state.daily[ch+"Units"] = units;
       openKeypad({
-        label: meta.name + " · " + ({cash:"現金",line:"Line",uber:"Uber"})[ch] + "金額",
-        initial: state.slots[slotIdx][ch+"Amount"],
+        label: "今日 " + chLabel + " 金額",
+        initial: state.daily[ch+"Amount"],
         prefix: "$",
         onConfirm(amount){
-          state.slots[slotIdx][ch+"Amount"] = amount;
-          document.getElementById(`amt-${slotIdx}-${ch}`).textContent = fmtMoney(amount);
-          document.getElementById(`unit-${slotIdx}-${ch}`).textContent = units + " 單";
+          state.daily[ch+"Amount"] = amount;
+          document.getElementById(`amt-${ch}`).textContent = fmtMoney(amount);
+          document.getElementById(`unit-${ch}`).textContent = units + " 單";
+          updateImpliedCash();
           saveDraft();
         }
       });
@@ -466,7 +473,8 @@ async function submitEntry(){
     const reconcile = document.getElementById("reconcileBadge");
     reconcile.textContent = data.message;
     reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
-    document.getElementById("footerHint").textContent = "已寫入今日分頁，錢盒總額 " + fmtMoney(data.cashboxTotal);
+    document.getElementById("footerHint").textContent =
+      "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
     btn.textContent = "已送出";
   } catch (err) {
     alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
@@ -491,7 +499,7 @@ function switchDay(newDay){
   const draft = loadDraft(state.day);
   state = draft || {
     day: String(newDay),
-    slots: [emptySlot(), emptySlot(), emptySlot()],
+    daily: emptyDaily(),
     sandwich: { units:0, amount:0 },
     purchases: [],
     cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
