@@ -6,99 +6,158 @@
 <title>庄腳 JenKa · 每日記帳</title>
 <style>
   :root{
-    --accent:#C96A43;
-    --ink:#2B2622;
-    --sub:#8A7F6E;
-    --bg:#F5F1EA;
-    --card:#FFFFFF;
-    --line:#E7DFD2;
-    --soft:#FBF8F3;
-    --good:#4F7A57;
-    --goodBg:#E7F1E5;
-    --warnBg:#FBF3E9;
-    --warnLine:#DDB98B;
-    --warnInk:#7A5B3A;
+    --accent:#BF5B3D;
+    --teal:#0F9088;
+    --ochre:#C99A1E;
+    --ink:#2B2824;
+    --sub:#6b665e;
+    --muted:#9a9488;
+    --bg:#F6F3ED;
+    --card:#FCFAF6;
+    --line:#E7E2D8;
+    --soft:#F6F3ED;
+    --good:#0F9088;
+    --goodBg:#E9F3F1;
+    --highlightBg:#F3E8DE;
+    --warnBg:#F5EFE3;
+    --warnLine:#DCC9A0;
+    --warnInk:#8A6B3A;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);}
-  .app{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;}
-  header{padding:16px 20px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:5;}
-  header .title{font-size:12px;color:var(--sub);font-weight:700;letter-spacing:.5px;}
-  header .date{font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px;}
-  header .date button{border:1px solid var(--line);background:#fff;border-radius:8px;width:30px;height:30px;font-size:16px;font-weight:800;color:var(--sub);}
-  .badge{font-size:13px;font-weight:700;background:var(--goodBg);color:var(--good);padding:8px 14px;border-radius:12px;}
+  /* 版面寬度鎖定在手機直式的寬度，即使在平板上也不會被拉寬，視覺集中在畫面中間 */
+  .app{max-width:460px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;background:var(--bg);position:relative;}
+  .stickytop{position:sticky;top:0;z-index:6;background:var(--bg);}
+  header{padding:14px 20px 0;background:var(--bg);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  header .brand{display:flex;align-items:center;gap:10px;}
+  header .logo{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--card);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
+  header .title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.5px;}
+  header .datepill{display:flex;align-items:center;gap:12px;background:var(--card);padding:8px 14px;border-radius:999px;box-shadow:0 1px 2px rgba(43,40,36,.06);}
+  header .date{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  header .date button{border:none;background:none;font-size:16px;font-weight:800;color:var(--muted);cursor:pointer;padding:0 2px;}
+  .badge{font-size:11.5px;font-weight:700;background:var(--goodBg);color:var(--good);padding:6px 12px;border-radius:999px;}
   .badge.warn{background:#FBECE8;color:#B3452C;}
-  .badge.neutral{background:#F6E9DD;color:#A8825F;}
-  main{flex-grow:1;display:grid;grid-template-columns:repeat(3,minmax(280px,1fr));gap:16px;padding:18px 20px 120px;}
-  @media (max-width:900px){ main{grid-template-columns:1fr;} }
-  .col{display:flex;flex-direction:column;gap:12px;}
-  .col h2{font-size:15px;font-weight:800;margin:0;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:9px;}
-  .card.warn{background:var(--warnBg);border:1.5px dashed var(--warnLine);}
+  .badge.neutral{background:#F3E8DE;color:var(--accent);}
+  /* 分頁：點了會平滑捲動到該區塊，同時整頁仍可直接往下滑完全部，兩種操作混合 */
+  .tabbar{display:flex;gap:7px;padding:12px 20px 6px;}
+  .tabbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 4px;border-radius:12px;border:none;cursor:pointer;font-size:12.5px;font-weight:700;background:transparent;color:var(--muted);transition:background .15s,color .15s;}
+  .tabbtn.active{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(43,40,36,.08);}
+  .tabbtn .tnum{width:18px;height:18px;border-radius:50%;color:var(--card);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  main{flex-grow:1;display:flex;flex-direction:column;gap:26px;padding:6px 20px 130px;}
+  .col{display:flex;flex-direction:column;gap:12px;scroll-margin-top:118px;}
+  .col h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:10px;}
+  .col h2 .secnum{width:26px;height:26px;border-radius:50%;color:var(--card);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .secnum.c-purchase{background:var(--ochre);}
+  .secnum.c-revenue{background:var(--teal);}
+  .secnum.c-cashbox{background:var(--accent);}
+  .card{background:var(--card);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:9px;box-shadow:0 2px 10px rgba(43,40,36,.06);}
+  .card.warn{background:var(--warnBg);border:1.5px dashed var(--warnLine);box-shadow:none;}
   .row-between{display:flex;align-items:center;justify-content:space-between;}
   .slotname{font-size:14px;font-weight:800;}
   .scanbtn{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:var(--sub);background:var(--soft);border:1px solid var(--line);padding:4px 8px;border-radius:999px;}
-  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-  .metric{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 8px;cursor:pointer;}
-  .metric .lbl{font-size:10px;color:var(--sub);font-weight:700;}
-  .metric .amt{font-size:14px;font-weight:800;}
-  .metric .unit{font-size:10px;color:#A8825F;font-weight:700;}
-  .hint{font-size:10px;color:#B0A18C;}
+  .metrics{display:flex;flex-direction:column;gap:10px;}
+  .metric{background:var(--soft);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+  .metric .lbl{font-size:13px;color:var(--sub);font-weight:600;}
+  .metric .vals{display:flex;align-items:baseline;gap:8px;font-variant-numeric:tabular-nums;}
+  .metric .unit{font-size:15px;font-weight:600;color:var(--sub);}
+  .metric .amt{font-size:20px;font-weight:800;color:var(--ink);}
+  .metric.implied{background:var(--highlightBg);}
+  .metric.implied .lbl{color:var(--accent);font-weight:700;}
+  .metric.implied .sub2{font-size:10.5px;color:var(--accent);opacity:.8;font-weight:600;margin-top:2px;}
+  .metric.implied .unit{color:var(--accent);opacity:.75;font-size:17px;}
+  .metric.implied .amt{color:var(--accent);font-size:24px;}
+  .hint{font-size:10.5px;color:var(--muted);}
   .sandwich-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .sandwich-grid .box{background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer;}
   .sandwich-grid .box .lbl{font-size:10px;color:var(--warnInk);font-weight:700;}
   .sandwich-grid .box .val{font-size:15px;font-weight:800;color:var(--warnInk);}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;}
-  .chip{border:1px solid #D9CEBC;background:#FCFAF6;border-radius:10px;font-weight:700;padding:10px 14px;font-size:13px;cursor:pointer;}
-  .chip.dashed{border:1.5px dashed #B7ACC8;background:#fff;color:var(--sub);}
+  .cattabs{display:flex;gap:6px;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:2px;}
+  .cattab{flex:1;text-align:center;padding:9px 6px;border-radius:999px;font-size:13px;font-weight:700;color:var(--muted);border:none;background:transparent;cursor:pointer;}
+  .cattab.active{background:var(--ochre);color:var(--card);font-weight:700;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{border:none;background:var(--soft);color:var(--sub);border-radius:999px;font-weight:600;padding:9px 14px;font-size:12.5px;cursor:pointer;}
+  .chip.dashed{border:1.5px dashed #D3CCBC;background:var(--card);color:var(--muted);}
   .plist{display:flex;flex-direction:column;gap:8px;}
   .pitem{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--soft);border-radius:10px;}
-  .pitem .name{font-size:14px;font-weight:800;}
-  .pitem .cat{font-size:11px;color:var(--sub);}
-  .pitem .amt{font-size:15px;font-weight:800;margin-right:8px;}
-  .pitem .del{border:none;background:none;color:#B0A18C;font-size:16px;cursor:pointer;}
-  .cashrow{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;cursor:pointer;}
-  .cashrow .d{font-size:13px;font-weight:800;}
-  .cashrow .qty{font-size:15px;font-weight:800;}
-  .cashrow .sub{font-size:13px;font-weight:800;color:var(--sub);}
+  .pitem .name{font-size:13px;font-weight:600;color:var(--ink);}
+  .pitem .cat{font-size:10.5px;color:var(--muted);margin-top:1px;}
+  .pitem .amt{font-size:14px;font-weight:700;margin-right:8px;}
+  .pitem .del{border:none;background:none;color:var(--muted);font-size:16px;cursor:pointer;}
+  .wizardbtn{width:100%;padding:11px;border-radius:999px;border:none;background:var(--accent);color:var(--card);font-weight:700;font-size:12.5px;cursor:pointer;margin-bottom:2px;}
+  .cashtable{background:var(--soft);border-radius:12px;overflow:hidden;}
+  .cashrow{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;}
+  .cashrow:last-child{border-bottom:none;}
+  .cashrow .d{font-size:13px;font-weight:600;color:var(--sub);}
+  .cashrow .mid{display:flex;align-items:center;gap:14px;}
+  .cashrow .qty{font-size:12.5px;color:var(--muted);min-width:34px;text-align:center;}
+  .cashrow .sub{font-size:13px;font-weight:700;color:var(--ink);min-width:64px;text-align:right;}
   .divider{height:1px;background:var(--line);margin:2px 0;}
-  .totalrow{display:flex;align-items:center;justify-content:space-between;padding-top:4px;}
-  .totalrow .l{font-size:13px;font-weight:800;}
-  .totalrow .v{font-size:18px;font-weight:800;}
-  footer{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -6px 16px rgba(43,38,34,.06);flex-wrap:wrap;}
-  .submitbtn{padding:15px 26px;border-radius:12px;border:none;font-size:15px;font-weight:800;background:var(--accent);color:#fff;cursor:pointer;}
-  .submitbtn:disabled{opacity:.5;cursor:default;}
+  .totalrow{display:flex;flex-direction:column;gap:3px;padding:14px;background:var(--goodBg);border-radius:12px;margin-top:2px;}
+  .totalrow .toprow{display:flex;align-items:baseline;justify-content:space-between;}
+  .totalrow .l{font-size:12.5px;font-weight:700;color:var(--good);}
+  .totalrow .v{font-size:20px;font-weight:800;color:var(--good);font-variant-numeric:tabular-nums;}
+  footer{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -6px 16px rgba(43,38,34,.06);flex-wrap:wrap;}
+  .submitbtn{padding:14px 26px;border-radius:12px;border:none;font-size:14.5px;font-weight:700;background:var(--accent);color:var(--card);cursor:pointer;box-shadow:0 3px 8px rgba(191,91,61,.3);}
+  .submitbtn:disabled{opacity:.5;cursor:default;box-shadow:none;}
   /* keypad sheet */
   .sheet-backdrop{position:fixed;inset:0;background:rgba(43,38,34,.35);display:none;align-items:flex-end;justify-content:center;z-index:20;}
   .sheet-backdrop.open{display:flex;}
-  .sheet{background:#fff;width:100%;max-width:420px;border-radius:18px 18px 0 0;padding:16px 18px 22px;box-shadow:0 -12px 30px rgba(0,0,0,.18);}
+  .sheet{background:var(--card);width:100%;max-width:420px;border-radius:18px 18px 0 0;padding:16px 18px 22px;box-shadow:0 -12px 30px rgba(0,0,0,.18);}
   .sheet .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
   .sheet .head .lbl{font-size:13px;color:var(--sub);font-weight:700;}
   .sheet .display{font-size:28px;font-weight:800;text-align:right;margin-bottom:12px;min-height:34px;}
   .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .keys button{padding:16px 0;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:700;}
-  .keys button.confirm{background:var(--accent);color:#fff;border:none;font-size:15px;}
-  .keys button.clear{background:#FCFAF6;color:var(--sub);font-size:13px;}
+  .keys button{padding:16px 0;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:700;color:var(--ink);}
+  .keys button.confirm{background:var(--accent);color:var(--card);border:none;font-size:15px;}
+  .keys button.clear{background:var(--card);color:var(--sub);font-size:13px;}
   input,textarea{font-family:inherit;}
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <div>
-      <div class="title">庄腳 JenKa · 每日記帳</div>
-      <div class="date">
-        <button id="prevDay">‹</button>
-        <span id="dateLabel">—</span>
-        <button id="nextDay">›</button>
+  <div class="stickytop">
+    <header>
+      <div class="brand">
+        <div class="logo">庄</div>
+        <div>
+          <div class="title">庄腳 JenKa</div>
+          <div style="font-size:16px;font-weight:700;">每日記帳</div>
+        </div>
       </div>
+      <div class="datepill">
+        <div class="date">
+          <button id="prevDay">‹</button>
+          <span id="dateLabel">—</span>
+          <button id="nextDay">›</button>
+        </div>
+        <div style="width:1px;height:14px;background:var(--line);"></div>
+        <div id="statusBadge" class="badge neutral">尚未送出</div>
+      </div>
+    </header>
+    <div class="tabbar" id="tabbar">
+      <button class="tabbtn active" data-target="sec-purchase"><span class="tnum" style="background:var(--ochre);">①</span>今日進貨</button>
+      <button class="tabbtn" data-target="sec-revenue"><span class="tnum" style="background:var(--teal);">②</span>今日營業額</button>
+      <button class="tabbtn" data-target="sec-cashbox"><span class="tnum" style="background:var(--accent);">③</span>錢盒現金</button>
     </div>
-    <div id="statusBadge" class="badge neutral">尚未送出</div>
-  </header>
+  </div>
 
   <main>
-    <div class="col">
-      <h2>今日營業額</h2>
+    <div class="col" id="sec-purchase">
+      <h2><span class="secnum c-purchase">①</span>今日進貨</h2>
+      <div class="card">
+        <div class="cattabs" id="purchaseTabs">
+          <button class="cattab active" data-cat="銷貨成本">銷貨成本</button>
+          <button class="cattab" data-cat="固定成本">固定成本</button>
+        </div>
+        <div class="chips" id="vendorChips"></div>
+        <div class="divider"></div>
+        <div class="plist" id="purchaseList"></div>
+        <div class="hint">點項目按鈕輸入金額，會問要不要加備註，自動加入下面清單；點清單項目右邊 × 可以刪除。</div>
+      </div>
+    </div>
+
+    <div class="col" id="sec-revenue">
+      <h2><span class="secnum c-revenue">②</span>今日營業額</h2>
 
       <div class="card warn">
         <div class="row-between">
@@ -121,18 +180,8 @@
       <div class="hint">時段細分不用每天記，每週把 Uber/Line 後台匯出的訂單資料給我，我會另外整理成週報表給您參考。</div>
     </div>
 
-    <div class="col">
-      <h2>今日進貨</h2>
-      <div class="card">
-        <div class="chips" id="vendorChips"></div>
-        <div class="divider"></div>
-        <div class="plist" id="purchaseList"></div>
-        <div class="hint">點廠商按鈕輸入金額，會自動加入上面清單；點清單項目右邊 × 可以刪除。</div>
-      </div>
-    </div>
-
-    <div class="col">
-      <h2>錢盒現金</h2>
+    <div class="col" id="sec-cashbox">
+      <h2><span class="secnum c-cashbox">③</span>錢盒現金</h2>
       <div class="card" id="cashboxCard"></div>
       <button class="submitbtn" id="submitBtn">送出今日帳目</button>
     </div>
@@ -179,7 +228,12 @@ const CHANNELS = [
   { key: "line", label: "Line" },
   { key: "uber", label: "Uber" }
 ];
-const FALLBACK_VENDORS = ["晨起","蛋商","廣弘","毓品","肉商","蔬果","一豆","光泉","南北貨","非餅尋嚐","慶樺","好市多","外帶餐具"];
+// 進貨分兩種分類，用分頁切換（不一次全部列出，避免太雜）；離線或還沒讀到『分類』分頁時先用這份預設清單
+const FALLBACK_VENDORS = {
+  "銷貨成本": ["晨起","蛋商","廣弘","毓品","肉商","蔬果","一豆","光泉","南北貨","非餅尋嚐","慶樺","好市多","外帶餐具","其他"],
+  "固定成本": ["人事費","店租","水電瓦斯費","通訊費","廣告印刷費","修繕費","消耗品費","稅金","研究開發費","員工福利金","研修費","雜費"]
+};
+let vendorsByCategory = { "銷貨成本": FALLBACK_VENDORS["銷貨成本"].slice(), "固定成本": FALLBACK_VENDORS["固定成本"].slice() };
 const CASHBOX_DENOMS = [1000,500,100,50,10,5,1];
 
 function emptyDaily(){ return { totalUnits:0, totalAmount:0, lineUnits:0, lineAmount:0, uberUnits:0, uberAmount:0 }; }
@@ -196,6 +250,7 @@ let state = {
   purchases: [],
   cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
 };
+let currentPurchaseCat = "銷貨成本"; // 目前選到哪個進貨分類分頁（不隨日期存檔，每次開啟預設銷貨成本）
 
 const DRAFT_KEY = "jenka-bookkeeping-draft";
 function saveDraft(){
@@ -224,19 +279,26 @@ function renderSlots(){
         ${CHANNELS.map(c => `
           <div class="metric" data-channel="${c.key}">
             <div class="lbl">${c.label}</div>
-            <div class="amt" id="amt-${c.key}">${fmtMoney(s[c.key+"Amount"])}</div>
-            <div class="unit" id="unit-${c.key}">${s[c.key+"Units"]||0} 單</div>
+            <div class="vals">
+              <span class="unit" id="unit-${c.key}">${s[c.key+"Units"]||0}單</span>
+              <span class="amt" id="amt-${c.key}">${fmtMoney(s[c.key+"Amount"])}</span>
+            </div>
           </div>`).join("")}
       </div>
       <div class="hint">點欄位可直接輸入單量與金額（會先問單量、再問金額）。現金不用填，送出後系統會自動算：總額－Line－Uber。</div>
-      <div class="divider"></div>
-      <div class="row-between">
-        <div style="font-size:12px;color:var(--sub);font-weight:700;">推算現金</div>
-        <div style="font-size:15px;font-weight:800;" id="impliedCash">$0（0 單）</div>
+      <div class="metric implied">
+        <div>
+          <div class="lbl">推算現金</div>
+          <div class="sub2">總額－Line－Uber</div>
+        </div>
+        <div class="vals">
+          <span class="unit" id="impliedUnit">0單</span>
+          <span class="amt" id="impliedAmt">$0</span>
+        </div>
       </div>
     </div>
   `;
-  wrap.querySelectorAll(".metric").forEach(el => {
+  wrap.querySelectorAll(".metric[data-channel]").forEach(el => {
     el.addEventListener("click", () => openChannelEntry(el.dataset.channel));
   });
   updateImpliedCash();
@@ -244,12 +306,16 @@ function renderSlots(){
 
 function updateImpliedCash(){
   const s = state.daily;
-  const el = document.getElementById("impliedCash");
-  if (!el) return;
+  const amtEl = document.getElementById("impliedAmt");
+  const unitEl = document.getElementById("impliedUnit");
+  if (!amtEl || !unitEl) return;
   const cashAmount = (s.totalAmount||0) - (s.lineAmount||0) - (s.uberAmount||0);
   const cashUnits = (s.totalUnits||0) - (s.lineUnits||0) - (s.uberUnits||0);
-  el.textContent = fmtMoney(cashAmount) + "（" + cashUnits + " 單）";
-  el.style.color = cashAmount < 0 ? "#B3452C" : "var(--ink)";
+  amtEl.textContent = fmtMoney(cashAmount);
+  unitEl.textContent = cashUnits + "單";
+  const color = cashAmount < 0 ? "#B3452C" : "var(--accent)";
+  amtEl.style.color = color;
+  unitEl.style.color = color;
 }
 
 function openChannelEntry(ch){
@@ -296,35 +362,46 @@ document.querySelectorAll("[data-field^='sandwich']").forEach(el => {
   });
 });
 
-// ---------- 畫面：進貨廠商 ----------
-function renderVendorChips(vendors){
+// ---------- 畫面：進貨／支出項目（銷貨成本／固定成本 分頁切換） ----------
+document.querySelectorAll("#purchaseTabs .cattab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#purchaseTabs .cattab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentPurchaseCat = btn.dataset.cat;
+    renderVendorChips();
+  });
+});
+
+function renderVendorChips(){
   const wrap = document.getElementById("vendorChips");
   wrap.innerHTML = "";
-  vendors.forEach(v => {
+  const list = vendorsByCategory[currentPurchaseCat] || [];
+  list.forEach(v => {
     const chip = document.createElement("div");
     chip.className = "chip";
     chip.textContent = v;
-    chip.addEventListener("click", () => openPurchaseEntry(v));
+    chip.addEventListener("click", () => openPurchaseEntry(v, currentPurchaseCat));
     wrap.appendChild(chip);
   });
   const other = document.createElement("div");
   other.className = "chip dashed";
-  other.textContent = "+ 其他廠商";
+  other.textContent = "+ 自行輸入項目";
   other.addEventListener("click", () => {
-    const name = prompt("請輸入廠商名稱：");
-    if (name && name.trim()) openPurchaseEntry(name.trim());
+    const name = prompt("請輸入項目名稱：");
+    if (name && name.trim()) openPurchaseEntry(name.trim(), currentPurchaseCat);
   });
   wrap.appendChild(other);
 }
 
-function openPurchaseEntry(vendor){
+function openPurchaseEntry(vendor, category){
   openKeypad({
     label: vendor + " · 金額",
     initial: 0,
     prefix: "$",
     onConfirm(amount){
       if (amount <= 0) return;
-      state.purchases.push({ vendor, detail:"", note:"", amount });
+      const note = (prompt("備註（可留空，直接確定即可）：", "") || "").trim();
+      state.purchases.push({ vendor, category, detail:"", note, amount });
       renderPurchaseList();
       saveDraft();
     }
@@ -335,12 +412,13 @@ function renderPurchaseList(){
   const wrap = document.getElementById("purchaseList");
   wrap.innerHTML = "";
   state.purchases.forEach((p, idx) => {
+    const cat = p.category || "銷貨成本";
     const row = document.createElement("div");
     row.className = "pitem";
     row.innerHTML = `
       <div>
         <div class="name">${p.vendor}${p.detail ? " · " + p.detail : ""}</div>
-        <div class="cat">銷貨成本</div>
+        <div class="cat">${cat}${p.note ? " · " + p.note : ""}</div>
       </div>
       <div style="display:flex;align-items:center;">
         <div class="amt">${fmtMoney(p.amount)}</div>
@@ -358,7 +436,7 @@ function renderPurchaseList(){
     const warn = document.createElement("div");
     warn.className = "hint";
     warn.style.color = "#B3452C";
-    warn.textContent = "已達今日進貨上限（9筆），如需更多請合併同廠商項目。";
+    warn.textContent = "已達今日進貨/支出上限（9筆），如需更多請合併同項目。";
     wrap.appendChild(warn);
   }
 }
@@ -367,39 +445,35 @@ function renderPurchaseList(){
 function renderCashbox(){
   const wrap = document.getElementById("cashboxCard");
   wrap.innerHTML = "";
+
+  const startBtn = document.createElement("button");
+  startBtn.className = "wizardbtn";
+  startBtn.textContent = "🔢 開始清點（依序輸入全部面額）";
+  startBtn.addEventListener("click", startCashboxWizard);
+  wrap.appendChild(startBtn);
+
+  const table = document.createElement("div");
+  table.className = "cashtable";
   CASHBOX_DENOMS.forEach(d => {
     const qty = state.cashbox[String(d)] || 0;
     const row = document.createElement("div");
     row.className = "cashrow";
     row.dataset.denom = d;
     row.innerHTML = `
-      <div class="d">$${d.toLocaleString()} 面額</div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="qty" id="qty-${d}">${qty} 張</div>
-        <div class="sub" id="sub-${d}">= ${fmtMoney(qty*d)}</div>
+      <div class="d">$${d.toLocaleString()}</div>
+      <div class="mid">
+        <div class="qty" id="qty-${d}">× ${qty}</div>
+        <div class="sub" id="sub-${d}">${fmtMoney(qty*d)}</div>
       </div>
     `;
-    row.addEventListener("click", () => {
-      openKeypad({
-        label: "$" + d.toLocaleString() + " 面額 · 張數",
-        initial: state.cashbox[String(d)],
-        onConfirm(v){
-          state.cashbox[String(d)] = v;
-          document.getElementById(`qty-${d}`).textContent = v + " 張";
-          document.getElementById(`sub-${d}`).textContent = "= " + fmtMoney(v*d);
-          updateCashboxTotal();
-          saveDraft();
-        }
-      });
-    });
-    wrap.appendChild(row);
+    // 點單一列：只改這個面額，改完就關閉（適合修正單一筆）
+    row.addEventListener("click", () => openCashboxStep(CASHBOX_DENOMS.indexOf(d), false));
+    table.appendChild(row);
   });
-  const divider = document.createElement("div");
-  divider.className = "divider";
-  wrap.appendChild(divider);
+  wrap.appendChild(table);
   const total = document.createElement("div");
   total.className = "totalrow";
-  total.innerHTML = `<div class="l">錢盒總額</div><div class="v" id="cashboxTotal">$0</div>`;
+  total.innerHTML = `<div class="toprow"><div class="l">錢盒總額</div><div class="v" id="cashboxTotal">$0</div></div>`;
   wrap.appendChild(total);
   updateCashboxTotal();
 }
@@ -408,6 +482,29 @@ function updateCashboxTotal(){
   CASHBOX_DENOMS.forEach(d => sum += (state.cashbox[String(d)]||0) * d);
   const el = document.getElementById("cashboxTotal");
   if (el) el.textContent = fmtMoney(sum);
+}
+
+// ---------- 錢盒快速清點：確認一個面額後自動跳下一個，不用每次重新點選 ----------
+function startCashboxWizard(){
+  openCashboxStep(0, true);
+}
+function openCashboxStep(index, chained){
+  if (index < 0 || index >= CASHBOX_DENOMS.length) return;
+  const d = CASHBOX_DENOMS[index];
+  openKeypad({
+    label: "$" + d.toLocaleString() + " 面額 · 張數" + (chained ? "（" + (index+1) + "/" + CASHBOX_DENOMS.length + "）" : ""),
+    initial: state.cashbox[String(d)],
+    onConfirm(v){
+      state.cashbox[String(d)] = v;
+      document.getElementById(`qty-${d}`).textContent = "× " + v;
+      document.getElementById(`sub-${d}`).textContent = fmtMoney(v*d);
+      updateCashboxTotal();
+      saveDraft();
+      if (chained && index + 1 < CASHBOX_DENOMS.length) {
+        openCashboxStep(index + 1, true); // 自動接著跳下一個面額，不用再點一次
+      }
+    }
+  });
 }
 
 // ---------- 共用數字鍵盤 ----------
@@ -483,6 +580,24 @@ async function submitEntry(){
   }
 }
 
+// ---------- 分頁：點分頁會平滑捲動過去，整頁依然可以直接往下滑完全部（兩種操作混合） ----------
+document.querySelectorAll(".tabbtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const target = document.getElementById(btn.dataset.target);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+function setActiveTab(id){
+  document.querySelectorAll(".tabbtn").forEach(b => b.classList.toggle("active", b.dataset.target === id));
+}
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) setActiveTab(e.target.id); });
+}, { rootMargin: "-20% 0px -65% 0px", threshold: 0 });
+["sec-purchase","sec-revenue","sec-cashbox"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) sectionObserver.observe(el);
+});
+
 // ---------- 換日期 ----------
 function refreshDateLabel(){
   const d = new Date();
@@ -511,6 +626,7 @@ function renderAll(){
   refreshDateLabel();
   renderSlots();
   renderSandwich();
+  renderVendorChips();
   renderPurchaseList();
   renderCashbox();
 }
@@ -519,17 +635,19 @@ function renderAll(){
 async function init(){
   const draft = loadDraft(state.day);
   if (draft) state = draft;
-  renderAll();
+  renderAll(); // 先用內建清單畫面，網路狀況不好也能馬上操作
 
-  let vendors = FALLBACK_VENDORS;
   try {
     const res = await fetch(CONFIG.API_URL + "?action=vendors");
     const data = await res.json();
-    if (data.ok && data.vendors && data.vendors.length) vendors = data.vendors;
+    if (data.ok && data.vendors) {
+      if (data.vendors["銷貨成本"] && data.vendors["銷貨成本"].length) vendorsByCategory["銷貨成本"] = data.vendors["銷貨成本"];
+      if (data.vendors["固定成本"] && data.vendors["固定成本"].length) vendorsByCategory["固定成本"] = data.vendors["固定成本"];
+      renderVendorChips();
+    }
   } catch(e) {
-    // 離線或還沒設定好網址時，用內建的廠商清單，不影響操作
+    // 離線或還沒設定好網址時，用內建的清單，不影響操作
   }
-  renderVendorChips(vendors);
 }
 init();
 </script>
