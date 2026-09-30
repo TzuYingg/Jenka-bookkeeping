@@ -65,9 +65,11 @@
   .col h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .col h2 .titlewrap{display:flex;align-items:center;gap:10px;}
   .col h2 .secnum{width:26px;height:26px;border-radius:50%;color:var(--card);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .col h2 .h2btns{display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .sendbtn-text{border:none;background:var(--soft);color:var(--sub);border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0;}
   .sendbtn-text:disabled{opacity:.5;cursor:default;}
   .sendbtn-text svg{flex-shrink:0;}
+  .sendbtn-text.clearbtn{background:transparent;color:var(--muted);padding:6px 8px;}
   .secnum.c-purchase{background:var(--ochre);}
   .secnum.c-revenue{background:var(--teal);}
   .secnum.c-cashbox{background:var(--accent);}
@@ -175,10 +177,16 @@
     <div class="col" id="sec-purchase">
       <h2>
         <span class="titlewrap"><span class="secnum c-purchase">①</span>今日進貨</span>
-        <button class="sendbtn-text" type="button" data-section="purchase">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          送出
-        </button>
+        <span class="h2btns">
+          <button class="sendbtn-text clearbtn" type="button" data-clear-local="purchase" title="清空這一段畫面上還沒送出的內容">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            清除
+          </button>
+          <button class="sendbtn-text" type="button" data-section="purchase">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            送出
+          </button>
+        </span>
       </h2>
       <div class="card">
         <div class="cattabs" id="purchaseTabs">
@@ -195,10 +203,16 @@
     <div class="col" id="sec-revenue">
       <h2>
         <span class="titlewrap"><span class="secnum c-revenue">②</span>今日營業額</span>
-        <button class="sendbtn-text" type="button" data-section="revenue">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          送出
-        </button>
+        <span class="h2btns">
+          <button class="sendbtn-text clearbtn" type="button" data-clear-local="revenue" title="清空這一段畫面上還沒送出的內容">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            清除
+          </button>
+          <button class="sendbtn-text" type="button" data-section="revenue">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            送出
+          </button>
+        </span>
       </h2>
 
       <div class="card b">
@@ -221,7 +235,6 @@
             <div class="val" id="v-sandwich-amount">$ ___</div>
           </div>
         </div>
-        <div class="hint">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡留存查核用；金額記得已經算在左邊「總額」欄位裡了，不用再重複加一次。</div>
       </div>
 
       <div id="slots"></div>
@@ -231,10 +244,16 @@
     <div class="col" id="sec-cashbox">
       <h2>
         <span class="titlewrap"><span class="secnum c-cashbox">③</span>錢盒現金</span>
-        <button class="sendbtn-text" type="button" data-section="cashbox">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          送出
-        </button>
+        <span class="h2btns">
+          <button class="sendbtn-text clearbtn" type="button" data-clear-local="cashbox" title="清空這一段畫面上還沒送出的內容">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            清除
+          </button>
+          <button class="sendbtn-text" type="button" data-section="cashbox">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            送出
+          </button>
+        </span>
       </h2>
       <div class="card" id="cashboxCard"></div>
     </div>
@@ -242,10 +261,16 @@
     <div class="col" id="sec-handover">
       <h2>
         <span class="titlewrap"><span class="secnum c-handover">④</span>交接紀錄</span>
-        <button class="sendbtn-text" type="button" data-section="handover">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          送出
-        </button>
+        <span class="h2btns">
+          <button class="sendbtn-text clearbtn" type="button" data-clear-local="handover" title="清空這一段畫面上還沒送出的內容">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            清除
+          </button>
+          <button class="sendbtn-text" type="button" data-section="handover">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            送出
+          </button>
+        </span>
       </h2>
       <div class="card">
         <div class="slotname">填表人</div>
@@ -264,7 +289,6 @@
         <div class="slotname">備料狀況</div>
         <div class="chips" id="prepChips"></div>
       </div>
-      <div class="hint">這幾項會跟著這一天的帳目一起送出，不用另外按送出。</div>
     </div>
   </main>
 
@@ -824,17 +848,32 @@ function validateAllFilled(){
   return missing;
 }
 
-// ---------- 送出 ----------
+// ---------- 送出：同一時間只能有一個送出動作在進行，避免兩個送出鈕（或連點兩下）
+// 同時打到雲端造成互相打架、寫到一半失敗的狀況；也讓「已送出」的狀態能穩定停留，
+// 不會過幾秒又跳回「送出」讓人以為沒送成功。 ----------
+let submitInFlight = false;
+function allSubmitButtons(){
+  const list = [document.getElementById("submitBtn")];
+  document.querySelectorAll(".sendbtn-text[data-section]").forEach(b => list.push(b));
+  document.querySelectorAll(".clearbtn[data-clear-local]").forEach(b => list.push(b));
+  return list;
+}
+function setAllSubmitButtonsDisabled(disabled){
+  allSubmitButtons().forEach(b => { if (b) b.disabled = disabled; });
+}
+
 document.getElementById("submitBtn").addEventListener("click", submitEntry);
 async function submitEntry(){
+  if (submitInFlight) return;
   const missing = validateAllFilled();
   if (missing.length > 0) {
     alert("還有欄位沒填寫，請填寫完再送出：\n\n・" + missing.join("\n・"));
     return;
   }
   const btn = document.getElementById("submitBtn");
-  btn.disabled = true;
-  btn.textContent = "送出中…";
+  submitInFlight = true;
+  setAllSubmitButtonsDisabled(true);
+  btn.textContent = "送出中…（請稍候，這裡可能要幾秒鐘）";
   try {
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
@@ -842,9 +881,10 @@ async function submitEntry(){
       body: JSON.stringify(Object.assign({}, state, { section: "all" }))
     });
     const data = await res.json();
+    submitInFlight = false;
+    setAllSubmitButtonsDisabled(false);
     if (!data.ok) {
       alert("送出失敗：" + data.error);
-      btn.disabled = false;
       btn.textContent = "全部送出";
       return;
     }
@@ -856,19 +896,17 @@ async function submitEntry(){
     reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
     document.getElementById("footerHint").textContent =
       "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
+    // 「已送出」會一直顯示，不會過幾秒自動跳回「全部送出」造成誤會；
+    // 只要再按一次（或改了內容再送）就會重新走一次送出流程。
     btn.textContent = "已送出";
     // 最後跳出現金核對結果，讓結帳的人清楚知道現在的狀況
     alert("已送出！\n\n" + data.message +
       "\n現金應有：" + fmtMoney(data.cashAmount) +
       "\n錢盒總額：" + fmtMoney(data.cashboxTotal));
-    // 送出後按鈕保持可以再按：填寫還沒完成也可以先送一次，之後補填其他部分再送出一次會用最新內容覆蓋更新
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = "全部送出";
-    }, 1500);
   } catch (err) {
+    submitInFlight = false;
+    setAllSubmitButtonsDisabled(false);
     alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
-    btn.disabled = false;
     btn.textContent = "全部送出";
   }
 }
@@ -880,12 +918,16 @@ const SECTION_LABELS = {
   cashbox: "錢盒現金",
   handover: "交接紀錄"
 };
+// 記住每個分頁送出鈕原本的樣子，「清除」的時候要把按鈕還原成這個狀態
+const sendBtnOriginalHTML = {};
 document.querySelectorAll(".sendbtn-text[data-section]").forEach(btn => {
+  sendBtnOriginalHTML[btn.dataset.section] = btn.innerHTML;
   btn.addEventListener("click", () => submitSection(btn.dataset.section, btn));
 });
 async function submitSection(section, btn){
-  const original = btn.innerHTML;
-  btn.disabled = true;
+  if (submitInFlight) return;
+  submitInFlight = true;
+  setAllSubmitButtonsDisabled(true);
   btn.innerHTML = "送出中…";
   try {
     const res = await fetch(CONFIG.API_URL, {
@@ -894,10 +936,11 @@ async function submitSection(section, btn){
       body: JSON.stringify(Object.assign({}, state, { section: section }))
     });
     const data = await res.json();
+    submitInFlight = false;
+    setAllSubmitButtonsDisabled(false);
     if (!data.ok) {
       alert("送出失敗：" + data.error);
-      btn.disabled = false;
-      btn.innerHTML = original;
+      btn.innerHTML = sendBtnOriginalHTML[section];
       return;
     }
     // 現金相關欄位有回傳核對結果時，順便更新底部狀態
@@ -908,16 +951,39 @@ async function submitSection(section, btn){
       document.getElementById("footerHint").textContent =
         "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
     }
-    btn.innerHTML = "已送出 ✓";
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.innerHTML = original;
-    }, 1500);
+    // 已送出的狀態會一直停留在按鈕上，不會過幾秒又跳回「送出」；
+    // 這一段內容如果之後又被清除或重新編輯，按鈕會自動變回原本的「送出」樣子。
+    btn.innerHTML = "已送出";
   } catch (err) {
+    submitInFlight = false;
+    setAllSubmitButtonsDisabled(false);
     alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
-    btn.disabled = false;
-    btn.innerHTML = original;
+    btn.innerHTML = sendBtnOriginalHTML[section];
   }
+}
+
+// ---------- 清除本機輸入：只清空畫面上「還沒送出」的欄位，不會動到雲端已經送出的資料，
+// 方便填錯的時候直接清空重填，不用逐一手動改掉。 ----------
+document.querySelectorAll(".clearbtn[data-clear-local]").forEach(btn => {
+  btn.addEventListener("click", () => clearLocalSection(btn.dataset.clearLocal));
+});
+function resetSendBtnAppearance(section){
+  const sendBtn = document.querySelector('.sendbtn-text[data-section="' + section + '"]');
+  if (sendBtn && sendBtnOriginalHTML[section]) {
+    sendBtn.innerHTML = sendBtnOriginalHTML[section];
+    sendBtn.classList.remove("sent");
+  }
+}
+function clearLocalSection(section){
+  const label = SECTION_LABELS[section] || "這個區塊";
+  if (!confirm("確定要清空「" + label + "」畫面上還沒送出的內容嗎？\n（只會清空這台裝置畫面上的輸入，不會影響雲端已經送出的資料，方便重新填寫）")) return;
+  if (section === "purchase") { state.purchases = []; }
+  if (section === "revenue") { state.daily = emptyDaily(); state.sandwich = { units:0, amount:0 }; }
+  if (section === "cashbox") { state.cashbox = Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0])); }
+  if (section === "handover") { state.formFiller = ""; state.workload = { early:"", mid:"", noon:"" }; state.prepStatus = ""; }
+  saveDraft();
+  renderAll();
+  resetSendBtnAppearance(section);
 }
 
 // ---------- 底部導覽：點了會平滑捲動過去，整頁依然可以直接往下滑完全部（兩種操作混合） ----------
