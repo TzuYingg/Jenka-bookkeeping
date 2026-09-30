@@ -600,6 +600,11 @@ async function submitEntry(){
     document.getElementById("footerHint").textContent =
       "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
     btn.textContent = "已送出";
+    // 送出後按鈕保持可以再按：填寫還沒完成也可以先送一次，之後補填其他部分再送出一次會用最新內容覆蓋更新
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = "送出今日帳目";
+    }, 1500);
   } catch (err) {
     alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
     btn.disabled = false;
