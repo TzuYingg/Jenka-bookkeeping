@@ -19,9 +19,6 @@
     --good:#0F9088;
     --goodBg:#E9F3F1;
     --highlightBg:#F3E8DE;
-    --warnBg:#F5EFE3;
-    --warnLine:#DCC9A0;
-    --warnInk:#8A6B3A;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);}
@@ -64,7 +61,10 @@
   .secnum.c-revenue{background:var(--teal);}
   .secnum.c-cashbox{background:var(--accent);}
   .card{background:var(--card);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:9px;box-shadow:0 2px 10px rgba(43,40,36,.06);}
-  .card.warn{background:var(--warnBg);border:1.5px dashed var(--warnLine);box-shadow:none;}
+  .card.b{position:relative;padding-left:20px;}
+  .card.b::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:4px;background:var(--ochre);}
+  .badgeicon{width:22px;height:22px;border-radius:50%;background:var(--ochre);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--soft);color:var(--muted);}
   .row-between{display:flex;align-items:center;justify-content:space-between;}
   .slotname{font-size:14px;font-weight:800;}
   .scanbtn{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:var(--sub);background:var(--soft);border:1px solid var(--line);padding:4px 8px;border-radius:999px;}
@@ -81,9 +81,9 @@
   .metric.implied .amt{color:var(--accent);font-size:24px;}
   .hint{font-size:10.5px;color:var(--muted);}
   .sandwich-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .sandwich-grid .box{background:#fff;border-radius:8px;padding:7px 10px;cursor:pointer;}
-  .sandwich-grid .box .lbl{font-size:10px;color:var(--warnInk);font-weight:700;}
-  .sandwich-grid .box .val{font-size:15px;font-weight:800;color:var(--warnInk);}
+  .sandwich-grid .box{background:var(--soft);border-radius:10px;padding:10px 12px;cursor:pointer;}
+  .sandwich-grid .box .lbl{font-size:10.5px;color:var(--muted);font-weight:700;}
+  .sandwich-grid .box .val{font-size:16px;font-weight:800;color:var(--ink);margin-top:2px;}
   .cattabs{display:flex;gap:6px;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:2px;}
   .cattab{flex:1;text-align:center;padding:9px 6px;border-radius:999px;font-size:13px;font-weight:700;color:var(--muted);border:none;background:transparent;cursor:pointer;}
   .cattab.active{background:var(--ochre);color:var(--card);font-weight:700;}
@@ -164,9 +164,15 @@
     <div class="col" id="sec-revenue">
       <h2><span class="secnum c-revenue">②</span>今日營業額</h2>
 
-      <div class="card warn">
+      <div class="card b">
         <div class="row-between">
-          <div class="slotname" style="color:var(--warnInk);">🥪 現場三明治（手寫加總）</div>
+          <div class="slotname" style="display:flex;align-items:center;gap:8px;">
+            <span class="badgeicon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4-1 10-10a2 2 0 0 0-3-3L5 16l-1 4z"/></svg>
+            </span>
+            現場三明治
+          </div>
+          <span class="tag">手寫加總</span>
         </div>
         <div class="sandwich-grid">
           <div class="box" data-field="sandwich.units" data-suffix=" 份">
@@ -178,7 +184,7 @@
             <div class="val" id="v-sandwich-amount">$ ___</div>
           </div>
         </div>
-        <div class="hint" style="color:#A8825F;">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡留存查核用；金額記得已經算在左邊「總額」欄位裡了，不用再重複加一次。</div>
+        <div class="hint">9點前現場賣的三明治沒過POS，結帳時把紙上加總的份數和金額填這裡留存查核用；金額記得已經算在左邊「總額」欄位裡了，不用再重複加一次。</div>
       </div>
 
       <div id="slots"></div>
@@ -237,7 +243,7 @@
 <script>
 // ============ 設定：把 Apps Script 部署後的網址貼在這裡 ============
 const CONFIG = {
-  API_URL: "請貼上你的 Apps Script 網頁應用程式網址"
+  API_URL: "https://script.google.com/macros/s/AKfycby8ATgPpZ7SJR3I6q1vKj13bZJ_yOk9ZMB0GUyqZSV3AZfXApVGiErsVZBAUuMcOvXk/exec"
 };
 // ===================================================================
 
