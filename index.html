@@ -21,7 +21,8 @@
     --highlightBg:#F3E8DE;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);}
+  html{touch-action:manipulation;} /* 關閉雙指縮放、雙擊放大，但保留一般滑動 */
+  body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);touch-action:manipulation;overscroll-behavior:none;}
   /* 版面寬度鎖定在手機直式的寬度，即使在平板上也不會被拉寬，視覺集中在畫面中間 */
   .app{max-width:460px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;background:var(--bg);position:relative;}
   .stickytop{position:sticky;top:0;z-index:6;background:var(--bg);}
@@ -55,8 +56,12 @@
   .navitem.active span{color:var(--nav-color,var(--accent));font-weight:700;}
   main{flex-grow:1;display:flex;flex-direction:column;gap:26px;padding:14px 20px 30px;}
   .col{display:flex;flex-direction:column;gap:12px;scroll-margin-top:14px;}
-  .col h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;gap:10px;}
+  .col h2{font-size:15px;font-weight:700;margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .col h2 .titlewrap{display:flex;align-items:center;gap:10px;}
   .col h2 .secnum{width:26px;height:26px;border-radius:50%;color:var(--card);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .sendbtn-text{border:none;background:var(--soft);color:var(--sub);border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+  .sendbtn-text:disabled{opacity:.5;cursor:default;}
+  .sendbtn-text svg{flex-shrink:0;}
   .secnum.c-purchase{background:var(--ochre);}
   .secnum.c-revenue{background:var(--teal);}
   .secnum.c-cashbox{background:var(--accent);}
@@ -90,6 +95,10 @@
   .chips{display:flex;flex-wrap:wrap;gap:7px;}
   .chip{border:none;background:var(--soft);color:var(--sub);border-radius:999px;font-weight:600;padding:9px 14px;font-size:12.5px;cursor:pointer;}
   .chip.dashed{border:1.5px dashed #D3CCBC;background:var(--card);color:var(--muted);}
+  .chip.active{background:var(--accent);color:var(--card);font-weight:700;}
+  .sublabel{font-size:12px;font-weight:700;color:var(--sub);margin:10px 0 2px;}
+  .sublabel:first-child{margin-top:0;}
+  .secnum.c-handover{background:var(--sub);}
   .plist{display:flex;flex-direction:column;gap:8px;}
   .pitem{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--soft);border-radius:10px;}
   .pitem .name{font-size:13px;font-weight:600;color:var(--ink);}
@@ -109,8 +118,9 @@
   .totalrow .toprow{display:flex;align-items:baseline;justify-content:space-between;}
   .totalrow .l{font-size:12.5px;font-weight:700;color:var(--good);}
   .totalrow .v{font-size:20px;font-weight:800;color:var(--good);font-variant-numeric:tabular-nums;}
-  footer{background:var(--card);border-top:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .submitbtn{padding:14px 26px;border-radius:12px;border:none;font-size:14.5px;font-weight:700;background:var(--accent);color:var(--card);cursor:pointer;box-shadow:0 3px 8px rgba(191,91,61,.3);}
+  footer{background:var(--card);border-top:1px solid var(--line);padding:10px 20px;display:flex;flex-direction:column;gap:10px;}
+  footer .statusrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .submitbtn{width:100%;padding:14px 26px;border-radius:12px;border:none;font-size:14.5px;font-weight:700;background:var(--accent);color:var(--card);cursor:pointer;box-shadow:0 3px 8px rgba(191,91,61,.3);}
   .submitbtn:disabled{opacity:.5;cursor:default;box-shadow:none;}
   /* keypad sheet */
   .sheet-backdrop{position:fixed;inset:0;background:rgba(43,38,34,.35);display:none;align-items:flex-end;justify-content:center;z-index:20;}
@@ -148,7 +158,13 @@
 
   <main>
     <div class="col" id="sec-purchase">
-      <h2><span class="secnum c-purchase">①</span>今日進貨</h2>
+      <h2>
+        <span class="titlewrap"><span class="secnum c-purchase">①</span>今日進貨</span>
+        <button class="sendbtn-text" type="button" data-section="purchase">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          送出
+        </button>
+      </h2>
       <div class="card">
         <div class="cattabs" id="purchaseTabs">
           <button class="cattab active" data-cat="銷貨成本">銷貨成本</button>
@@ -162,7 +178,13 @@
     </div>
 
     <div class="col" id="sec-revenue">
-      <h2><span class="secnum c-revenue">②</span>今日營業額</h2>
+      <h2>
+        <span class="titlewrap"><span class="secnum c-revenue">②</span>今日營業額</span>
+        <button class="sendbtn-text" type="button" data-section="revenue">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          送出
+        </button>
+      </h2>
 
       <div class="card b">
         <div class="row-between">
@@ -192,19 +214,55 @@
     </div>
 
     <div class="col" id="sec-cashbox">
-      <h2><span class="secnum c-cashbox">③</span>錢盒現金</h2>
+      <h2>
+        <span class="titlewrap"><span class="secnum c-cashbox">③</span>錢盒現金</span>
+        <button class="sendbtn-text" type="button" data-section="cashbox">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          送出
+        </button>
+      </h2>
       <div class="card" id="cashboxCard"></div>
-      <button class="submitbtn" id="submitBtn">送出今日帳目</button>
+    </div>
+
+    <div class="col" id="sec-handover">
+      <h2>
+        <span class="titlewrap"><span class="secnum c-handover">④</span>交接紀錄</span>
+        <button class="sendbtn-text" type="button" data-section="handover">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          送出
+        </button>
+      </h2>
+      <div class="card">
+        <div class="slotname">填表人</div>
+        <div class="chips" id="fillerChips"></div>
+      </div>
+      <div class="card">
+        <div class="slotname">人力負荷</div>
+        <div class="sublabel">早班 6:30-9:00</div>
+        <div class="chips" id="workloadEarlyChips"></div>
+        <div class="sublabel">中班 9:00-11:30</div>
+        <div class="chips" id="workloadMidChips"></div>
+        <div class="sublabel">午班 11:30-13:00</div>
+        <div class="chips" id="workloadNoonChips"></div>
+      </div>
+      <div class="card">
+        <div class="slotname">備料狀況</div>
+        <div class="chips" id="prepChips"></div>
+      </div>
+      <div class="hint">這幾項會跟著這一天的帳目一起送出，不用另外按送出。</div>
     </div>
   </main>
 
   <div class="stickybottom">
     <footer>
-      <div>
-        <div style="font-size:12px;color:var(--sub);font-weight:700;">今日現金核對</div>
-        <div style="font-size:13px;color:var(--sub);" id="footerHint">填完全部欄位後送出</div>
+      <div class="statusrow">
+        <div>
+          <div style="font-size:12px;color:var(--sub);font-weight:700;">今日現金核對</div>
+          <div style="font-size:13px;color:var(--sub);" id="footerHint">填完全部欄位後送出</div>
+        </div>
+        <div class="badge neutral" id="reconcileBadge">尚未核對</div>
       </div>
-      <div class="badge neutral" id="reconcileBadge">尚未核對</div>
+      <button class="submitbtn" id="submitBtn">全部送出</button>
     </footer>
     <div class="bottomnav" id="bottomnav">
       <button class="navitem active" data-target="sec-purchase" style="--nav-color:var(--ochre);">
@@ -219,6 +277,10 @@
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6"/><path d="M5 12v6c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-6"/></svg>
         <span>錢盒現金</span>
       </button>
+      <button class="navitem" data-target="sec-handover" style="--nav-color:var(--sub);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6"/><path d="M9 10.5h6M9 14.5h6M9 18.5h3"/></svg>
+        <span>交接紀錄</span>
+      </button>
     </div>
   </div>
 </div>
@@ -231,9 +293,9 @@
     </div>
     <div class="display" id="sheetDisplay">0</div>
     <div class="keys">
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
       <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
       <button class="clear" data-k="clear">清除</button><button data-k="0">0</button>
       <button class="confirm" data-k="confirm">確認</button>
     </div>
@@ -246,6 +308,17 @@ const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycby3F6EdZwl8g9TstuYov-VGu6xrTCsNoYdZAsKfgXtyus3W2qw8Vm9ZsA13QRFk9eM9-A/exec"
 };
 // ===================================================================
+
+// ---------- 平板防止手滑放大縮小：擋掉雙指縮放手勢、雙擊放大 ----------
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("gesturechange", e => e.preventDefault());
+document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener("touchend", e => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 350) e.preventDefault(); // 擋掉快速點兩下造成的放大
+  lastTouchEnd = now;
+}, { passive: false });
 
 // 現金不用自己算：填「總額」+ Line + Uber，現金是總額扣掉 Line、Uber 之後的餘數，
 // 跟原本試算表的公式（H=N-J-L，I=O-K-M）邏輯一致，Code.gs 那邊會用公式寫回儲存格，
@@ -277,9 +350,16 @@ function emptyDayState(day, month, year){
     daily: emptyDaily(),
     sandwich: { units:0, amount:0 },
     purchases: [],
-    cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
+    cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0])),
+    formFiller: "",
+    workload: { early: "", mid: "", noon: "" },
+    prepStatus: ""
   };
 }
+
+const FILLER_OPTIONS = ["KaKa","Jen","RX"];
+const WORKLOAD_OPTIONS = ["充足","勉強","不足","過剩"];
+const PREP_OPTIONS = ["完成/剛剛好","完成/微緊繃","完成/好閒","不足/時間太少","沒備/無空檔"];
 
 const initParts = todayParts();
 let state = emptyDayState(initParts.day, initParts.month, initParts.year);
@@ -579,9 +659,32 @@ document.querySelectorAll(".keys button").forEach(btn => {
   });
 });
 
+// ---------- 送出前檢查：全部送出時，確認每個必填欄位都已經填寫 ----------
+// 今日進貨可以合理地是「今天沒進貨」而完全不填，所以不列入檢查；
+// 其他四類（總營業額、錢盒現金、交接紀錄四項）預設都是空白／0，沒填就檢查得出來。
+function validateAllFilled(){
+  const missing = [];
+  const d = state.daily || {};
+  if (!Number(d.totalAmount) && !Number(d.totalUnits)) missing.push("今日營業額（總額）");
+  let cashboxTotal = 0;
+  CASHBOX_DENOMS.forEach(den => { cashboxTotal += (Number(state.cashbox[String(den)]) || 0) * den; });
+  if (!cashboxTotal) missing.push("錢盒現金（清點金額）");
+  if (!state.formFiller) missing.push("交接紀錄・填表人");
+  if (!state.workload.early) missing.push("交接紀錄・人力負荷（早班）");
+  if (!state.workload.mid) missing.push("交接紀錄・人力負荷（中班）");
+  if (!state.workload.noon) missing.push("交接紀錄・人力負荷（午班）");
+  if (!state.prepStatus) missing.push("交接紀錄・備料狀況");
+  return missing;
+}
+
 // ---------- 送出 ----------
 document.getElementById("submitBtn").addEventListener("click", submitEntry);
 async function submitEntry(){
+  const missing = validateAllFilled();
+  if (missing.length > 0) {
+    alert("還有欄位沒填寫，請填寫完再送出：\n\n・" + missing.join("\n・"));
+    return;
+  }
   const btn = document.getElementById("submitBtn");
   btn.disabled = true;
   btn.textContent = "送出中…";
@@ -589,13 +692,13 @@ async function submitEntry(){
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" }, // 避免瀏覽器預檢請求，Apps Script 不支援 OPTIONS
-      body: JSON.stringify(state)
+      body: JSON.stringify(Object.assign({}, state, { section: "all" }))
     });
     const data = await res.json();
     if (!data.ok) {
       alert("送出失敗：" + data.error);
       btn.disabled = false;
-      btn.textContent = "送出今日帳目";
+      btn.textContent = "全部送出";
       return;
     }
     const badge = document.getElementById("statusBadge");
@@ -607,15 +710,66 @@ async function submitEntry(){
     document.getElementById("footerHint").textContent =
       "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
     btn.textContent = "已送出";
+    // 最後跳出現金核對結果，讓結帳的人清楚知道現在的狀況
+    alert("已送出！\n\n" + data.message +
+      "\n現金應有：" + fmtMoney(data.cashAmount) +
+      "\n錢盒總額：" + fmtMoney(data.cashboxTotal));
     // 送出後按鈕保持可以再按：填寫還沒完成也可以先送一次，之後補填其他部分再送出一次會用最新內容覆蓋更新
     setTimeout(() => {
       btn.disabled = false;
-      btn.textContent = "送出今日帳目";
+      btn.textContent = "全部送出";
     }, 1500);
   } catch (err) {
     alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
     btn.disabled = false;
-    btn.textContent = "送出今日帳目";
+    btn.textContent = "全部送出";
+  }
+}
+
+// ---------- 分段送出：只送出該分頁的資料 ----------
+const SECTION_LABELS = {
+  purchase: "今日進貨",
+  revenue: "今日營業額",
+  cashbox: "錢盒現金",
+  handover: "交接紀錄"
+};
+document.querySelectorAll(".sendbtn-text[data-section]").forEach(btn => {
+  btn.addEventListener("click", () => submitSection(btn.dataset.section, btn));
+});
+async function submitSection(section, btn){
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = "送出中…";
+  try {
+    const res = await fetch(CONFIG.API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.assign({}, state, { section: section }))
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      alert("送出失敗：" + data.error);
+      btn.disabled = false;
+      btn.innerHTML = original;
+      return;
+    }
+    // 現金相關欄位有回傳核對結果時，順便更新底部狀態
+    if (section === "cashbox" && data.message !== undefined) {
+      const reconcile = document.getElementById("reconcileBadge");
+      reconcile.textContent = data.message;
+      reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
+      document.getElementById("footerHint").textContent =
+        "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
+    }
+    btn.innerHTML = "已送出 ✓";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }, 1500);
+  } catch (err) {
+    alert("連線失敗，請檢查網路，或稍後再試一次。\n" + err);
+    btn.disabled = false;
+    btn.innerHTML = original;
   }
 }
 
@@ -632,7 +786,7 @@ function setActiveTab(id){
 const sectionObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) setActiveTab(e.target.id); });
 }, { rootMargin: "-20% 0px -65% 0px", threshold: 0 });
-["sec-purchase","sec-revenue","sec-cashbox"].forEach(id => {
+["sec-purchase","sec-revenue","sec-cashbox","sec-handover"].forEach(id => {
   const el = document.getElementById(id);
   if (el) sectionObserver.observe(el);
 });
@@ -663,6 +817,30 @@ function renderAll(){
   renderVendorChips();
   renderPurchaseList();
   renderCashbox();
+  renderHandover();
+}
+
+// ---------- 交接紀錄：填表人／人力負荷／備料狀況，都是單選 chip ----------
+function renderChipGroup(containerId, options, selectedValue, onSelect){
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = options.map(opt =>
+    `<button type="button" class="chip${opt === selectedValue ? " active" : ""}" data-val="${opt}">${opt}</button>`
+  ).join("");
+  wrap.querySelectorAll(".chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      onSelect(btn.dataset.val);
+      saveDraft();
+      renderHandover();
+    });
+  });
+}
+function renderHandover(){
+  renderChipGroup("fillerChips", FILLER_OPTIONS, state.formFiller, v => { state.formFiller = v; });
+  renderChipGroup("workloadEarlyChips", WORKLOAD_OPTIONS, state.workload.early, v => { state.workload.early = v; });
+  renderChipGroup("workloadMidChips", WORKLOAD_OPTIONS, state.workload.mid, v => { state.workload.mid = v; });
+  renderChipGroup("workloadNoonChips", WORKLOAD_OPTIONS, state.workload.noon, v => { state.workload.noon = v; });
+  renderChipGroup("prepChips", PREP_OPTIONS, state.prepStatus, v => { state.prepStatus = v; });
 }
 
 // ---------- 初始化 ----------
