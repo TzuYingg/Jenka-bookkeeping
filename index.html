@@ -265,27 +265,34 @@ const CASHBOX_DENOMS = [1000,500,100,50,10,5,1];
 
 function emptyDaily(){ return { totalUnits:0, totalAmount:0, lineUnits:0, lineAmount:0, uberUnits:0, uberAmount:0 }; }
 
-function todayDay(){
+function todayParts(){
   const now = new Date();
-  return String(now.getDate());
+  return { day: now.getDate(), month: now.getMonth() + 1, year: now.getFullYear() };
+}
+function emptyDayState(day, month, year){
+  return {
+    day: String(day),
+    month: month,
+    year: year,
+    daily: emptyDaily(),
+    sandwich: { units:0, amount:0 },
+    purchases: [],
+    cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
+  };
 }
 
-let state = {
-  day: todayDay(),
-  daily: emptyDaily(),
-  sandwich: { units:0, amount:0 },
-  purchases: [],
-  cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
-};
+const initParts = todayParts();
+let state = emptyDayState(initParts.day, initParts.month, initParts.year);
 let currentPurchaseCat = "銷貨成本"; // 目前選到哪個進貨分類分頁（不隨日期存檔，每次開啟預設銷貨成本）
 
 const DRAFT_KEY = "jenka-bookkeeping-draft";
+function draftKey(s){ return s.year + "-" + s.month + "-" + s.day; }
 function saveDraft(){
-  try { localStorage.setItem(DRAFT_KEY + "-" + state.day, JSON.stringify(state)); } catch(e){}
+  try { localStorage.setItem(DRAFT_KEY + "-" + draftKey(state), JSON.stringify(state)); } catch(e){}
 }
-function loadDraft(day){
+function loadDraft(key){
   try {
-    const raw = localStorage.getItem(DRAFT_KEY + "-" + day);
+    const raw = localStorage.getItem(DRAFT_KEY + "-" + key);
     if (raw) return JSON.parse(raw);
   } catch(e){}
   return null;
@@ -630,28 +637,22 @@ const sectionObserver = new IntersectionObserver((entries) => {
   if (el) sectionObserver.observe(el);
 });
 
-// ---------- 換日期 ----------
+// ---------- 換日期（用真正的 Date 物件跨月計算，避免「往後按」在月底跳成下個月同一天數的錯誤日期） ----------
 function refreshDateLabel(){
-  const d = new Date();
-  d.setDate(Number(state.day));
+  const d = new Date(state.year, state.month - 1, Number(state.day));
   const weekday = ["日","一","二","三","四","五","六"][d.getDay()];
-  document.getElementById("dateLabel").textContent = (d.getMonth()+1) + "月" + state.day + "日";
+  document.getElementById("dateLabel").textContent = state.month + "月" + state.day + "日";
   document.getElementById("dateWeekday").textContent = "週" + weekday;
 }
-document.getElementById("prevDay").addEventListener("click", () => switchDay(Number(state.day) - 1));
-document.getElementById("nextDay").addEventListener("click", () => switchDay(Number(state.day) + 1));
-function switchDay(newDay){
-  if (newDay < 1 || newDay > 31) return;
+document.getElementById("prevDay").addEventListener("click", () => switchDay(-1));
+document.getElementById("nextDay").addEventListener("click", () => switchDay(1));
+function switchDay(deltaDays){
   saveDraft();
-  state.day = String(newDay);
-  const draft = loadDraft(state.day);
-  state = draft || {
-    day: String(newDay),
-    daily: emptyDaily(),
-    sandwich: { units:0, amount:0 },
-    purchases: [],
-    cashbox: Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]))
-  };
+  const d = new Date(state.year, state.month - 1, Number(state.day));
+  d.setDate(d.getDate() + deltaDays); // setDate 會自動正確處理跨月／跨年
+  const newDay = d.getDate(), newMonth = d.getMonth() + 1, newYear = d.getFullYear();
+  const draft = loadDraft(newYear + "-" + newMonth + "-" + newDay);
+  state = draft || emptyDayState(newDay, newMonth, newYear);
   renderAll();
 }
 
@@ -666,7 +667,7 @@ function renderAll(){
 
 // ---------- 初始化 ----------
 async function init(){
-  const draft = loadDraft(state.day);
+  const draft = loadDraft(draftKey(state));
   if (draft) state = draft;
   renderAll(); // 先用內建清單畫面，網路狀況不好也能馬上操作
 
