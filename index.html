@@ -36,7 +36,9 @@
   @keyframes syncspin{to{transform:rotate(360deg);}}
   header .statuscorner{display:flex;align-items:center;gap:5px;}
   header .statuscorner .dot{width:6px;height:6px;border-radius:50%;background:var(--good);flex-shrink:0;}
-  header .logo{height:38px;width:auto;display:block;}
+  header .logo{height:38px;width:auto;display:block;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;transition:transform .8s ease, opacity .8s ease;}
+  /* 按住 logo 時慢慢縮小變淡，讓人知道「再按住一下就會打開」 */
+  header .logo.pressing{transform:scale(.86);opacity:.55;}
   /* 日期：置中大字＋圓形箭頭 */
   .datebar{padding:6px 20px 10px;display:flex;align-items:center;justify-content:center;gap:16px;}
   .datebar button{border:none;background:var(--card);width:32px;height:32px;border-radius:50%;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;box-shadow:0 1px 3px rgba(43,40,36,.08);flex-shrink:0;}
@@ -44,9 +46,14 @@
   .datebar .big{font-size:20px;font-weight:800;color:var(--ink);}
   .datebar .small{font-size:11.5px;color:var(--muted);font-weight:600;}
   .topdivider{height:1px;background:var(--line);margin:0 20px;}
+  /* 這台平板還沒送出的提示：細細一行，不搶畫面 */
+  .unsentbar{display:none;align-items:center;justify-content:center;gap:7px;padding:0 20px 10px;font-size:11.5px;letter-spacing:.04em;color:var(--accent);font-weight:500;text-align:center;}
+  .unsentbar.show{display:flex;}
+  .unsentbar .udot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;}
   .badge{font-size:11.5px;font-weight:700;background:var(--goodBg);color:var(--good);padding:6px 12px;border-radius:999px;}
   .badge.warn{background:#FBECE8;color:#B3452C;}
   .badge.neutral{background:#F3E8DE;color:var(--accent);}
+  .badge.over{background:#F7EED6;color:#9A7414;}
   .statuscorner .txt{font-size:10.5px;color:var(--muted);font-weight:600;}
   .statuscorner.warn .dot{background:#B3452C;}
   .statuscorner.warn .txt{color:#B3452C;}
@@ -159,8 +166,127 @@
   .formfield input{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:15px;color:var(--ink);}
   .formfield input:focus{outline:none;border-color:var(--accent);background:var(--card);}
   .formerr{font-size:12px;color:#B3452C;margin:-6px 0 10px;display:none;}
+  .formvendor{font-size:17px;font-weight:500;letter-spacing:.12em;margin:4px 0 14px;display:none;}
+  .formvendor.show{display:block;}
+  .storechips{display:flex;flex-wrap:wrap;gap:7px;}
+  .storechips:empty{display:none;}
+  .storechips .chip{font-size:13px;}
+  .storenew{font-size:11.5px;color:var(--good);letter-spacing:.04em;display:none;}
+  .storenew.show{display:block;}
   .formbtn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:var(--card);font-size:15px;font-weight:700;}
+  /* 送出結果／未填提醒：日式簡約版面（留白、細線、細體數字） */
+  .rsheet{background:var(--card);width:100%;max-width:420px;border-radius:20px 20px 0 0;padding:26px 28px 24px;box-shadow:0 -10px 28px rgba(43,40,36,.12);}
+  .rsheet .rtop{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.18em;color:var(--muted);font-weight:500;}
+  .rsheet .rclose{cursor:pointer;letter-spacing:0;font-size:14px;color:var(--muted);}
+  .rsheet .rhero{text-align:center;padding:30px 0 26px;}
+  .rsheet .rstatus{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;letter-spacing:.2em;font-weight:500;color:var(--rc);}
+  .rsheet .rstatus::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--rc);}
+  .rsheet .rbig{font-size:44px;font-weight:300;letter-spacing:.02em;color:var(--rc);margin-top:10px;line-height:1.1;font-variant-numeric:tabular-nums;}
+  .rsheet .rbig small{font-size:16px;font-weight:400;margin-right:6px;letter-spacing:.1em;}
+  .rsheet .rnote{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7;}
+  .rsheet .rrows{border-top:1px solid var(--line);}
+  .rsheet .rrow{display:flex;justify-content:space-between;align-items:baseline;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13px;}
+  .rsheet .rrow .k{color:var(--sub);letter-spacing:.05em;}
+  .rsheet .rrow .v{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;}
+  .rsheet .rrow.em .v{font-size:15px;}
+  .rsheet .rgap{height:14px;}
+  .rsheet .rsaved{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:11px;letter-spacing:.06em;color:var(--good);}
+  .rsheet .rsaved svg{flex-shrink:0;}
+  .rsheet .rsteps{margin-top:20px;}
+  .rsheet .rsteps .ttl{font-size:11px;letter-spacing:.18em;color:var(--muted);margin-bottom:8px;}
+  .rsheet .rsteps ol{margin:0;padding:0;list-style:none;counter-reset:st;}
+  .rsheet .rsteps li{counter-increment:st;display:flex;gap:12px;font-size:13px;color:var(--ink);padding:5px 0;line-height:1.6;}
+  .rsheet .rsteps li::before{content:counter(st);font-size:11px;color:var(--rc);min-width:14px;padding-top:2px;font-variant-numeric:tabular-nums;}
+  .rsheet .rsteps li.last::before{content:"→";}
+  .rsheet .rbtns{display:flex;gap:10px;margin-top:24px;}
+  .rsheet .rbtns button{flex:1;padding:14px 0;border-radius:999px;font-size:14px;letter-spacing:.12em;font-weight:500;cursor:pointer;font-family:inherit;}
+  .rsheet .rbtn-ghost{background:transparent;border:1px solid #CFC8BA;color:var(--sub);}
+  .rsheet .rbtn-main{background:var(--ink);border:1px solid var(--ink);color:var(--card);}
+  .rsheet .rmiss li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--rc);min-width:5px;margin-top:9px;}
   input,textarea{font-family:inherit;}
+  /* ===== 日式簡約外觀（只改樣式，不動任何資料或功能）===== */
+  body{letter-spacing:.02em;}
+  .datebar .big{font-weight:500;letter-spacing:.08em;}
+  .datebar .small{font-weight:400;letter-spacing:.2em;}
+  .datebar button{background:transparent;border:1px solid var(--line);box-shadow:none;font-weight:400;}
+  .statuscorner .txt{font-weight:500;letter-spacing:.1em;}
+  main{gap:40px;padding-top:22px;}
+  .col{gap:14px;}
+  .col h2{font-size:15px;font-weight:500;letter-spacing:.16em;}
+  .col h2 .secnum{background:transparent !important;width:auto;height:auto;border-radius:0;font-size:12px;font-weight:400;letter-spacing:.05em;color:var(--sec-c);}
+  .col h2 .secnum::after{content:"";display:inline-block;width:14px;height:1px;background:currentColor;margin-left:8px;vertical-align:middle;opacity:.7;}
+  .secnum.c-purchase{--sec-c:var(--ochre);}
+  .secnum.c-revenue{--sec-c:var(--teal);}
+  .secnum.c-cashbox{--sec-c:var(--accent);}
+  .secnum.c-handover{--sec-c:var(--sub);}
+  .sendbtn-text{background:transparent;border:1px solid var(--line);font-weight:500;letter-spacing:.12em;padding:6px 14px;}
+  .sendbtn-text.clearbtn{border-color:transparent;font-weight:400;}
+  .card{box-shadow:none;border:1px solid var(--line);border-radius:14px;padding:18px;gap:12px;}
+  .card.b::before{width:2px;top:18px;bottom:18px;border-radius:0;}
+  .badgeicon{background:transparent;border:1px solid var(--ochre);}
+  .badgeicon svg{stroke:var(--ochre);}
+  .slotname{font-size:13.5px;font-weight:500;letter-spacing:.12em;}
+  .tag{background:transparent;border:1px solid var(--line);font-weight:400;letter-spacing:.1em;}
+  .hint{letter-spacing:.04em;line-height:1.7;}
+  .sublabel{font-weight:400;letter-spacing:.1em;color:var(--muted);}
+  /* 分頁：底線式 */
+  .cattabs{background:transparent;border-radius:0;padding:0;gap:0;border-bottom:1px solid var(--line);}
+  .cattab{border-radius:0;font-weight:400;letter-spacing:.16em;padding:10px 6px 11px;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .cattab.active{background:transparent;color:var(--ink);font-weight:500;border-bottom-color:var(--ochre);}
+  /* 選項：細框，選到的變深色 */
+  .chip{background:transparent;border:1px solid var(--line);color:var(--sub);font-weight:400;letter-spacing:.08em;padding:8px 15px;}
+  .chip.dashed{border:1px dashed #CFC8BA;}
+  .chip.active{background:var(--ink);border-color:var(--ink);color:var(--card);font-weight:500;}
+  /* 清單：細線分隔，不用色塊 */
+  .divider{margin:0;}
+  .plist{gap:0;}
+  .pitem{background:transparent;border-radius:0;padding:12px 2px;border-bottom:1px solid var(--line);}
+  .pitem .name{font-weight:500;}
+  .pitem .amt{font-weight:500;font-variant-numeric:tabular-nums;}
+  /* 營業額 */
+  .metrics{gap:0;}
+  .metric{background:transparent;border-radius:0;padding:14px 2px;border-bottom:1px solid var(--line);}
+  .metric .lbl{font-weight:400;letter-spacing:.12em;}
+  .metric .unit{font-weight:400;font-size:13px;color:var(--muted);}
+  .metric .amt{font-weight:400;font-size:20px;}
+  .metric.implied{background:transparent;border-bottom:none;padding-top:20px;}
+  .metric.implied .lbl{font-weight:500;}
+  .metric.implied .sub2{font-weight:400;opacity:1;color:var(--muted);letter-spacing:.06em;}
+  .metric.implied .unit{opacity:1;font-size:13px;}
+  .metric.implied .amt{font-size:30px;font-weight:300;}
+  .sandwich-grid .box{background:transparent;border:1px solid var(--line);}
+  .sandwich-grid .box .lbl{font-weight:400;letter-spacing:.12em;}
+  .sandwich-grid .box .val{font-weight:400;font-size:17px;}
+  /* 錢盒 */
+  .wizardbtn{background:transparent;border:1px solid var(--ink);color:var(--ink);font-weight:500;letter-spacing:.14em;padding:12px;}
+  .cashtable{background:transparent;border-radius:0;border-top:1px solid var(--line);}
+  .cashrow{padding:12px 2px;border-bottom:1px solid var(--line);}
+  .cashrow:last-child{border-bottom:1px solid var(--line);}
+  .cashrow .d{font-weight:400;}
+  .cashrow .sub{font-weight:500;}
+  .totalrow{background:transparent;border-radius:0;padding:16px 2px 4px;}
+  .totalrow .l{font-weight:500;letter-spacing:.14em;}
+  .totalrow .v{font-weight:300;font-size:30px;}
+  /* 底部 */
+  footer{gap:12px;}
+  .badge{background:transparent !important;border:1px solid currentColor;font-weight:500;letter-spacing:.08em;}
+  .submitbtn{background:var(--ink);box-shadow:none;border-radius:999px;font-weight:500;letter-spacing:.24em;}
+  .navitem span{font-weight:400;letter-spacing:.08em;}
+  .navitem.active span{font-weight:500;}
+  /* 數字鍵盤 */
+  .keys button{background:transparent;border:1px solid var(--line);font-weight:400;font-size:20px;}
+  .keys button.confirm{background:var(--ink);font-weight:500;letter-spacing:.2em;}
+  .sheet .display{font-weight:300;font-size:34px;}
+  .sheet .head .lbl{font-weight:500;letter-spacing:.1em;}
+  .signrow button{font-weight:400;letter-spacing:.1em;}
+  /* 進貨表單 */
+  .formfield{gap:8px;margin-bottom:18px;}
+  .formfield label{font-weight:400;letter-spacing:.18em;color:var(--muted);font-size:11.5px;}
+  .formfield input{background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:10px 2px;font-size:15px;}
+  .formfield input:focus{background:transparent;border-bottom-color:var(--ink);}
+  .formbtn{background:var(--ink);border-radius:999px;font-weight:500;letter-spacing:.2em;margin-top:6px;}
+  /* 三明治還沒填時的空白底線（實線） */
+  .blankline{display:inline-block;width:44px;height:1px;background:var(--muted);vertical-align:middle;margin:0 2px;}
 </style>
 </head>
 <body>
@@ -185,6 +311,7 @@
       </div>
       <button id="nextDay">›</button>
     </div>
+    <div class="unsentbar" id="unsentBar"></div>
     <div class="topdivider"></div>
   </div>
 
@@ -211,7 +338,7 @@
         <div class="chips" id="vendorChips"></div>
         <div class="divider"></div>
         <div class="plist" id="purchaseList"></div>
-        <div class="hint">點項目按鈕輸入金額，會問要不要加備註，自動加入下面清單；員工購買等收入，在金額畫面切到「收入（負數）」。點清單項目右邊 × 可以刪除。</div>
+        <div class="hint">點項目按鈕，選店家、填備註後輸入金額，自動加入下面清單；員工購買等收入，在金額畫面切到「收入（負數）」。點清單項目右邊 × 可以刪除。</div>
       </div>
     </div>
 
@@ -243,11 +370,11 @@
         <div class="sandwich-grid">
           <div class="box" data-field="sandwich.units" data-suffix=" 份">
             <div class="lbl">份數</div>
-            <div class="val" id="v-sandwich-units">___ 份</div>
+            <div class="val" id="v-sandwich-units"><span class="blankline"></span> 份</div>
           </div>
           <div class="box" data-field="sandwich.amount" data-prefix="$">
             <div class="lbl">金額</div>
-            <div class="val" id="v-sandwich-amount">$ ___</div>
+            <div class="val" id="v-sandwich-amount">$ <span class="blankline"></span></div>
           </div>
         </div>
       </div>
@@ -360,21 +487,24 @@
   </div>
 </div>
 
-<!-- 自行輸入項目：一次填 項目／店家／備註，再接數字鍵盤輸入金額 -->
+<!-- 進貨表單：點任何項目（固定或自行輸入）都先到這裡填 店家／備註，再接數字鍵盤輸入金額 -->
 <div class="sheet-backdrop" id="customSheetBackdrop">
   <div class="sheet">
     <div class="head">
-      <div class="lbl">自行輸入項目</div>
+      <div class="lbl" id="customSheetTitle">自行輸入項目</div>
       <div class="lbl" id="customSheetClose" style="cursor:pointer;">✕</div>
     </div>
-    <div class="formfield">
+    <div class="formvendor" id="customVendorFixed"></div>
+    <div class="formfield" id="customVendorField">
       <label for="customVendor">項目（必填）</label>
       <input id="customVendor" type="text" placeholder="例如：員工購買">
     </div>
     <div class="formerr" id="customErr">請先填項目名稱</div>
     <div class="formfield">
       <label for="customDetail">店家</label>
-      <input id="customDetail" type="text" placeholder="可留空">
+      <div class="storechips" id="storeChips"></div>
+      <input id="customDetail" type="text" placeholder="點上面的店家，或輸入其他店家（可留空）">
+      <div class="storenew" id="storeNewHint"></div>
     </div>
     <div class="formfield">
       <label for="customNote">備註</label>
@@ -382,6 +512,11 @@
     </div>
     <button type="button" class="formbtn" id="customNext">下一步：輸入金額</button>
   </div>
+</div>
+
+<!-- 送出結果／未填提醒（取代瀏覽器內建的提示框） -->
+<div class="sheet-backdrop" id="resultBackdrop">
+  <div class="rsheet" id="resultSheet"></div>
 </div>
 
 <!-- 清除資料：不放在主畫面上，要點兩下 logo 才會打開，避免誤觸 -->
@@ -413,12 +548,8 @@ const CONFIG = {
 document.addEventListener("gesturestart", e => e.preventDefault());
 document.addEventListener("gesturechange", e => e.preventDefault());
 document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-let lastTouchEnd = 0;
-document.addEventListener("touchend", e => {
-  const now = Date.now();
-  if (now - lastTouchEnd <= 350) e.preventDefault(); // 擋掉快速點兩下造成的放大
-  lastTouchEnd = now;
-}, { passive: false });
+// 雙擊放大改由 CSS 的 touch-action:manipulation 處理。原本這裡會擋掉 350 毫秒內的第二下點擊，
+// 結果數字鍵盤快速連按（例如 100、11）時，第二下會被吃掉，所以拿掉。
 
 // 現金不用自己算：填「總額」+ Line + Uber，現金是總額扣掉 Line、Uber 之後的餘數，
 // 跟原本試算表的公式（H=N-J-L，I=O-K-M）邏輯一致，Code.gs 那邊會用公式寫回儲存格，
@@ -456,6 +587,13 @@ function emptyDayState(day, month, year){
     prepStatus: ""
   };
 }
+// 新的一天：還沒有任何內容，視為「跟試算表一致的空白」
+function freshDayState(day, month, year){
+  const s = emptyDayState(day, month, year);
+  s.synced = {};
+  SECTIONS.forEach(sec => { s.synced[sec] = emptySnap(sec); });
+  return s;
+}
 
 const FILLER_OPTIONS = ["KaKa","Jen","RX"];
 const WORKLOAD_OPTIONS = ["充足","勉強","不足","過剩"];
@@ -465,10 +603,13 @@ const initParts = todayParts();
 let state = emptyDayState(initParts.day, initParts.month, initParts.year);
 let currentPurchaseCat = "銷貨成本"; // 目前選到哪個進貨分類分頁（不隨日期存檔，每次開啟預設銷貨成本）
 
+let submitInFlight = false; // 同一時間只允許一個送出動作
+const sendBtnOriginalHTML = {}; // 各段送出鈕原本的樣子
 const DRAFT_KEY = "jenka-bookkeeping-draft";
 function draftKey(s){ return s.year + "-" + s.month + "-" + s.day; }
 function saveDraft(){
   try { localStorage.setItem(DRAFT_KEY + "-" + draftKey(state), JSON.stringify(state)); } catch(e){}
+  updateUnsentBar();
 }
 function loadDraft(key){
   try {
@@ -476,6 +617,66 @@ function loadDraft(key){
     if (raw) return JSON.parse(raw);
   } catch(e){}
   return null;
+}
+
+// ---------- 哪幾段「還沒送出」：每段記住最後一次跟試算表一致時的內容（state.synced），
+// 現在的內容跟它不一樣，就是這台平板上還沒送出的修改 ----------
+const SECTIONS = ["purchase","revenue","cashbox","handover"];
+function sectionSnap(s, sec){
+  if (sec === "purchase") return JSON.stringify((s.purchases || []).map(p =>
+    [p.vendor || "", p.detail || "", p.note || "", Number(p.amount) || 0]));
+  if (sec === "revenue") {
+    const d = s.daily || {}, w = s.sandwich || {};
+    return JSON.stringify(["totalUnits","totalAmount","lineUnits","lineAmount","uberUnits","uberAmount"].map(k => Number(d[k]) || 0)
+      .concat([Number(w.units) || 0, Number(w.amount) || 0]));
+  }
+  if (sec === "cashbox") return JSON.stringify(CASHBOX_DENOMS.map(den => Number((s.cashbox || {})[String(den)]) || 0));
+  const w = s.workload || {};
+  return JSON.stringify([s.formFiller || "", w.early || "", w.mid || "", w.noon || "", s.prepStatus || ""]);
+}
+const EMPTY_SNAP = {};
+function emptySnap(sec){
+  if (!EMPTY_SNAP[sec]) EMPTY_SNAP[sec] = sectionSnap(emptyDayState(1, 1, 2000), sec);
+  return EMPTY_SNAP[sec];
+}
+function markSynced(sections){
+  state.synced = state.synced || {};
+  sections.forEach(sec => { state.synced[sec] = sectionSnap(state, sec); });
+}
+function unsentSections(){
+  return SECTIONS.filter(sec => {
+    const base = state.synced && state.synced[sec] !== undefined ? state.synced[sec] : emptySnap(sec);
+    return sectionSnap(state, sec) !== base;
+  });
+}
+const SECTION_SHORT = { purchase: "今日進貨", revenue: "今日營業額", cashbox: "錢盒現金", handover: "交接紀錄" };
+function updateUnsentBar(){
+  const bar = document.getElementById("unsentBar");
+  const badge = document.getElementById("statusBadge");
+  if (!bar || !badge) return;
+  const list = unsentSections();
+  // 各段右上角的「送出／已送出」跟底部「全部送出」也一起依照實際狀態顯示
+  if (!submitInFlight) {
+    document.querySelectorAll(".sendbtn-text[data-section]").forEach(b => {
+      const sec = b.dataset.section;
+      const sent = list.indexOf(sec) === -1 && sectionSnap(state, sec) !== emptySnap(sec);
+      if (sendBtnOriginalHTML[sec]) b.innerHTML = sent ? "已送出" : sendBtnOriginalHTML[sec];
+    });
+    const allBtn = document.getElementById("submitBtn");
+    const anyData = SECTIONS.some(sec => sectionSnap(state, sec) !== emptySnap(sec));
+    if (allBtn) allBtn.textContent = (!list.length && anyData) ? "已送出" : "全部送出";
+  }
+  if (list.length) {
+    bar.innerHTML = `<span class="udot"></span>這台平板有還沒送出的內容：${list.map(x => SECTION_SHORT[x]).join("、")}`;
+    bar.classList.add("show");
+    badge.className = "statuscorner neutral";
+    badge.querySelector(".txt").textContent = "尚未送出";
+  } else {
+    bar.classList.remove("show");
+    const hasData = SECTIONS.some(sec => sectionSnap(state, sec) !== emptySnap(sec));
+    badge.className = hasData ? "statuscorner" : "statuscorner neutral";
+    badge.querySelector(".txt").textContent = hasData ? "已送出" : "尚未填寫";
+  }
 }
 
 // ---------- 跨裝置同步：跟雲端試算表要「這一天目前已經送出的資料」 ----------
@@ -492,22 +693,43 @@ async function fetchServerEntry(year, month, day){
   }
   return null;
 }
+// 把試算表上的資料合併進畫面：
+//   這台平板「還沒送出」的那幾段 → 保留平板上的內容，不會被蓋掉
+//   其他已經送出（或沒動過）的段落 → 一律換成試算表上最新的內容，不同平板看到的都一樣
 function applyServerEntry(data){
-  state.daily = data.daily || emptyDaily();
-  state.sandwich = data.sandwich || { units:0, amount:0 };
-  state.purchases = data.purchases || [];
-  state.cashbox = data.cashbox || Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]));
-  state.formFiller = data.formFiller || "";
-  state.workload = data.workload || { early:"", mid:"", noon:"" };
-  state.prepStatus = data.prepStatus || "";
+  const cloud = emptyDayState(state.day, state.month, state.year);
+  cloud.daily = data.daily || emptyDaily();
+  cloud.sandwich = data.sandwich || { units:0, amount:0 };
+  cloud.purchases = data.purchases || [];
+  cloud.cashbox = data.cashbox || Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0]));
+  cloud.formFiller = data.formFiller || "";
+  cloud.workload = data.workload || { early:"", mid:"", noon:"" };
+  cloud.prepStatus = data.prepStatus || "";
+  const legacy = !state.synced; // 舊版頁面存的草稿沒有「送出紀錄」，只在雲端那段是空白時才保留平板內容
+  const next = {};
+  SECTIONS.forEach(sec => {
+    const localSnap = sectionSnap(state, sec), cloudSnap = sectionSnap(cloud, sec);
+    const keepLocal = legacy
+      ? (localSnap !== emptySnap(sec) && cloudSnap === emptySnap(sec))
+      : (localSnap !== state.synced[sec]);
+    next[sec] = keepLocal ? "local" : "cloud";
+  });
+  if (next.purchase === "cloud") state.purchases = cloud.purchases;
+  if (next.revenue === "cloud") { state.daily = cloud.daily; state.sandwich = cloud.sandwich; }
+  if (next.cashbox === "cloud") state.cashbox = cloud.cashbox;
+  if (next.handover === "cloud") { state.formFiller = cloud.formFiller; state.workload = cloud.workload; state.prepStatus = cloud.prepStatus; }
+  state.synced = {};
+  SECTIONS.forEach(sec => { state.synced[sec] = sectionSnap(cloud, sec); });
   saveDraft();
   renderAll();
 }
 async function syncFromServer(silent){
   const btn = document.getElementById("syncBtn");
   if (btn) { btn.disabled = true; btn.classList.add("spinning"); }
+  const key = draftKey(state);
   const data = await fetchServerEntry(state.year, state.month, state.day);
   if (btn) { btn.disabled = false; btn.classList.remove("spinning"); }
+  if (draftKey(state) !== key) return null; // 讀取途中已經切到別天，就不套用
   if (data) {
     applyServerEntry(data);
   } else if (!silent) {
@@ -515,23 +737,33 @@ async function syncFromServer(silent){
   }
   return data;
 }
-document.getElementById("syncBtn").addEventListener("click", () => {
-  if (confirm("這會用雲端上最新的資料，覆蓋畫面上目前還沒送出的內容，確定要重新讀取嗎？")) {
-    syncFromServer(false);
-  }
-});
+// 重新讀取：還沒送出的段落會保留，只更新已經送出的段落，所以按了也不會弄丟資料
+document.getElementById("syncBtn").addEventListener("click", () => syncFromServer(false));
 
 // ---------- 清除資料：藏起來的入口，連點兩下 logo 才會打開，避免誤觸 ----------
-let lastLogoTap = 0;
-document.getElementById("logoImg").addEventListener("click", () => {
-  const now = Date.now();
-  if (now - lastLogoTap < 500) {
+// 平板：按住 logo 約 1 秒打開（頁面為了防止雙擊放大，會擋掉快速的第二下點擊，所以平板上連點兩下沒反應）
+// 電腦：連點兩下也可以打開
+const logoEl = document.getElementById("logoImg");
+logoEl.setAttribute("draggable", "false");
+let logoPressTimer = null;
+function cancelLogoPress(){
+  clearTimeout(logoPressTimer);
+  logoPressTimer = null;
+  logoEl.classList.remove("pressing");
+}
+logoEl.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  cancelLogoPress();
+  logoEl.classList.add("pressing");
+  logoPressTimer = setTimeout(() => {
+    cancelLogoPress();
+    if (navigator.vibrate) { try { navigator.vibrate(30); } catch(err){} }
     openClearSheet();
-    lastLogoTap = 0;
-  } else {
-    lastLogoTap = now;
-  }
+  }, 900);
 });
+["pointerup","pointerleave","pointercancel"].forEach(ev => logoEl.addEventListener(ev, cancelLogoPress));
+logoEl.addEventListener("contextmenu", (e) => e.preventDefault()); // 擋掉長按圖片跳出的「儲存圖片」選單
+logoEl.addEventListener("dblclick", openClearSheet);
 function openClearSheet(){
   document.getElementById("clearSheetHint").textContent =
     "清除後，雲端試算表裡「" + state.month + "月" + state.day + "日」對應的資料會被清空，這個動作沒辦法復原，請確認清楚再按。";
@@ -573,6 +805,7 @@ async function clearSection(section, btn){
     if (section === "all" || section === "purchase") { state.purchases = []; }
     if (section === "all" || section === "cashbox") { state.cashbox = Object.fromEntries(CASHBOX_DENOMS.map(d => [String(d), 0])); }
     if (section === "all" || section === "handover") { state.formFiller = ""; state.workload = { early:"", mid:"", noon:"" }; state.prepStatus = ""; }
+    markSynced(section === "all" ? SECTIONS : [section]);
     saveDraft();
     renderAll();
     const reconcile = document.getElementById("reconcileBadge");
@@ -671,8 +904,8 @@ function openChannelEntry(ch){
 
 // ---------- 畫面：三明治 ----------
 function renderSandwich(){
-  document.getElementById("v-sandwich-units").textContent = state.sandwich.units ? state.sandwich.units + " 份" : "___ 份";
-  document.getElementById("v-sandwich-amount").textContent = state.sandwich.amount ? fmtMoney(state.sandwich.amount) : "$ ___";
+  document.getElementById("v-sandwich-units").innerHTML = state.sandwich.units ? state.sandwich.units + " 份" : '<span class="blankline"></span> 份';
+  document.getElementById("v-sandwich-amount").innerHTML = state.sandwich.amount ? fmtMoney(state.sandwich.amount) : '$ <span class="blankline"></span>';
 }
 document.querySelectorAll("[data-field^='sandwich']").forEach(el => {
   el.addEventListener("click", () => {
@@ -708,17 +941,17 @@ function renderVendorChips(){
     const chip = document.createElement("div");
     chip.className = "chip";
     chip.textContent = v;
-    chip.addEventListener("click", () => openPurchaseEntry(v, currentPurchaseCat));
+    chip.addEventListener("click", () => openPurchaseForm(v));
     wrap.appendChild(chip);
   });
   const other = document.createElement("div");
   other.className = "chip dashed";
   other.textContent = "+ 自行輸入項目";
-  other.addEventListener("click", openCustomItemForm);
+  other.addEventListener("click", () => openPurchaseForm(null));
   wrap.appendChild(other);
 }
 
-// extra 有值 = 從「自行輸入項目」表單來的（已經填好店家、備註），就不再跳備註視窗
+// 從進貨表單過來：店家、備註已經填好，這裡只輸入金額
 function openPurchaseEntry(vendor, category, extra){
   openKeypad({
     label: vendor + " · 金額",
@@ -727,21 +960,62 @@ function openPurchaseEntry(vendor, category, extra){
     allowNegative: true, // 顯示「支出／收入（負數）」切換，例如員工購買店內食品記成負數
     onConfirm(amount){
       if (amount === 0) return;
-      const detail = extra ? extra.detail : "";
-      const note = extra ? extra.note : (prompt("備註（可留空，直接確定即可）：", "") || "").trim();
+      const detail = (extra && extra.detail) || "";
+      const note = (extra && extra.note) || "";
       state.purchases.push({ vendor, category, detail, note, amount });
+      rememberStore(vendor, detail); // 新店家先加進這台平板的清單，送出後雲端也會記住
       renderPurchaseList();
       saveDraft();
     }
   });
 }
 
-// ---------- 自行輸入項目表單 ----------
-function openCustomItemForm(){
+// ---------- 常用店家：從試算表『常用店家』分頁讀來的 { 項目: [店家, ...] } ----------
+let storesByVendor = {};
+function rememberStore(vendor, store){
+  if (!vendor || !store) return;
+  const list = storesByVendor[vendor] || (storesByVendor[vendor] = []);
+  if (list.indexOf(store) === -1) list.push(store);
+}
+
+// ---------- 進貨表單：固定項目（項目已帶入）或自行輸入（要填項目） ----------
+let formFixedVendor = null;
+function currentFormVendor(){
+  return formFixedVendor || document.getElementById("customVendor").value.trim();
+}
+function renderStoreChips(){
+  const vendor = currentFormVendor();
+  const typed = document.getElementById("customDetail").value.trim();
+  const list = storesByVendor[vendor] || [];
+  const wrap = document.getElementById("storeChips");
+  wrap.innerHTML = list.map(st =>
+    `<button type="button" class="chip${st === typed ? " active" : ""}" data-store="${escHtml(st)}">${escHtml(st)}</button>`).join("");
+  wrap.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    const input = document.getElementById("customDetail");
+    input.value = (input.value.trim() === b.dataset.store) ? "" : b.dataset.store; // 再點一次取消
+    renderStoreChips();
+  }));
+  const hint = document.getElementById("storeNewHint");
+  const isNew = vendor && typed && list.indexOf(typed) === -1;
+  hint.textContent = isNew ? "送出後會加進「" + vendor + "」的常用店家" : "";
+  hint.classList.toggle("show", !!isNew);
+}
+function openPurchaseForm(vendor){
+  if (state.purchases.length >= 9) {
+    alert("今日進貨最多 9 筆（試算表只有 9 列）。請把同一家的合併成一筆，或刪掉一筆再加。");
+    return;
+  }
+  formFixedVendor = vendor;
   ["customVendor","customDetail","customNote"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("customErr").style.display = "none";
+  document.getElementById("customSheetTitle").textContent = vendor ? currentPurchaseCat : "自行輸入項目";
+  const fixed = document.getElementById("customVendorFixed");
+  fixed.textContent = vendor || "";
+  fixed.classList.toggle("show", !!vendor);
+  document.getElementById("customVendorField").style.display = vendor ? "none" : "";
+  renderStoreChips();
   document.getElementById("customSheetBackdrop").classList.add("open");
-  setTimeout(() => document.getElementById("customVendor").focus(), 50);
+  if (!vendor) setTimeout(() => document.getElementById("customVendor").focus(), 50);
 }
 function closeCustomItemForm(){
   document.getElementById("customSheetBackdrop").classList.remove("open");
@@ -752,9 +1026,11 @@ document.getElementById("customSheetBackdrop").addEventListener("click", (e) => 
 });
 document.getElementById("customVendor").addEventListener("input", () => {
   document.getElementById("customErr").style.display = "none";
+  renderStoreChips();
 });
+document.getElementById("customDetail").addEventListener("input", renderStoreChips);
 document.getElementById("customNext").addEventListener("click", () => {
-  const vendor = document.getElementById("customVendor").value.trim();
+  const vendor = currentFormVendor();
   if (!vendor) {
     document.getElementById("customErr").style.display = "block";
     document.getElementById("customVendor").focus();
@@ -775,8 +1051,8 @@ function renderPurchaseList(){
     row.className = "pitem";
     row.innerHTML = `
       <div>
-        <div class="name">${p.vendor}${p.detail ? " · " + p.detail : ""}</div>
-        <div class="cat">${cat}${Number(p.amount) < 0 ? " · 收入" : ""}${p.note ? " · " + p.note : ""}</div>
+        <div class="name">${escHtml(p.vendor)}${p.detail ? " · " + escHtml(p.detail) : ""}</div>
+        <div class="cat">${escHtml(cat)}${Number(p.amount) < 0 ? " · 收入" : ""}${p.note ? " · " + escHtml(p.note) : ""}</div>
       </div>
       <div style="display:flex;align-items:center;">
         <div class="amt${Number(p.amount) < 0 ? " income" : ""}">${fmtMoney(p.amount)}</div>
@@ -806,7 +1082,7 @@ function renderCashbox(){
 
   const startBtn = document.createElement("button");
   startBtn.className = "wizardbtn";
-  startBtn.textContent = "🔢 開始清點（依序輸入全部面額）";
+  startBtn.textContent = "開始清點（依序輸入全部面額）";
   startBtn.addEventListener("click", startCashboxWizard);
   wrap.appendChild(startBtn);
 
@@ -946,7 +1222,6 @@ function validateAllFilled(){
 // ---------- 送出：同一時間只能有一個送出動作在進行，避免兩個送出鈕（或連點兩下）
 // 同時打到雲端造成互相打架、寫到一半失敗的狀況；也讓「已送出」的狀態能穩定停留，
 // 不會過幾秒又跳回「送出」讓人以為沒送成功。 ----------
-let submitInFlight = false;
 function allSubmitButtons(){
   const list = [document.getElementById("submitBtn")];
   document.querySelectorAll(".sendbtn-text[data-section]").forEach(b => list.push(b));
@@ -957,12 +1232,124 @@ function setAllSubmitButtonsDisabled(disabled){
   allSubmitButtons().forEach(b => { if (b) b.disabled = disabled; });
 }
 
+// ---------- 現金核對結果：四種狀態 ----------
+// diff = 錢盒實收 − 現金應有。多 200 元內算對得上（可能是櫃台漏記的現金飲料、三明治）
+const CASH_OVER_OK = 200;
+function cashStatus(diff){
+  diff = Math.round(Number(diff) || 0);
+  const amt = "$" + Math.abs(diff).toLocaleString();
+  if (diff === 0) return { key:"ok", label:"對得上", big:"差額", amt:"$0", badge:"對得上", color:"var(--good)", badgeCls:"badge" };
+  if (diff > 0 && diff <= CASH_OVER_OK) return { key:"ok", label:"對得上", big:"多", amt, badge:"對得上・多 " + amt, color:"var(--good)", badgeCls:"badge",
+    note:"多出 " + CASH_OVER_OK + " 元內，可能是漏記的現金飲料或三明治" };
+  if (diff > 0) return { key:"over", label:"多收", big:"多", amt, badge:"多收・多 " + amt, color:"#9A7414", badgeCls:"badge over" };
+  return { key:"short", label:"短少", big:"少", amt, badge:"短少・少 " + amt, color:"#B3452C", badgeCls:"badge warn" };
+}
+function resetReconcileBadge(){
+  const reconcile = document.getElementById("reconcileBadge");
+  reconcile.textContent = "尚未核對";
+  reconcile.className = "badge neutral";
+  document.getElementById("footerHint").textContent = "填完全部欄位後送出";
+}
+function updateReconcileBadge(data){
+  const st = cashStatus(data.diff);
+  const reconcile = document.getElementById("reconcileBadge");
+  reconcile.textContent = st.badge;
+  reconcile.className = st.badgeCls;
+  document.getElementById("footerHint").textContent =
+    "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒實收 " + fmtMoney(data.cashboxTotal);
+}
+function escHtml(t){ return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+function resultDateText(){
+  return state.month + "." + state.day + "　" + (document.getElementById("dateWeekday").textContent || "");
+}
+function openResultSheet(html, color){
+  const sheet = document.getElementById("resultSheet");
+  sheet.style.setProperty("--rc", color);
+  sheet.innerHTML = html;
+  document.getElementById("resultBackdrop").classList.add("open");
+  sheet.querySelectorAll("[data-r]").forEach(b => b.addEventListener("click", () => {
+    closeResultSheet();
+    if (b.dataset.r === "edit") {
+      const target = document.getElementById(b.dataset.target || "sec-cashbox");
+      if (target) target.scrollIntoView({ behavior:"smooth", block:"start" });
+    }
+  }));
+}
+function closeResultSheet(){ document.getElementById("resultBackdrop").classList.remove("open"); }
+document.getElementById("resultBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "resultBackdrop") closeResultSheet();
+});
+
+function showSubmitResult(data){
+  const st = cashStatus(data.diff);
+  // 優先用試算表讀回來的值（data.saved）；舊版後台沒有回傳時才用平板上的資料
+  const sv = data.saved || null;
+  const d = sv ? { totalAmount: sv.totalAmount, totalUnits: sv.totalUnits } : (state.daily || {});
+  const pCount = sv ? sv.purchaseCount : state.purchases.length;
+  const pSum = sv ? sv.purchaseSum : state.purchases.reduce((a, p) => a + (Number(p.amount) || 0), 0);
+  const filler = sv ? sv.formFiller : state.formFiller;
+  const savedLine = sv ? `
+    <div class="rsaved">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><polyline points="1.5,6.5 4.5,9.5 10.5,2.5"/></svg>
+      <span>已寫入試算表　${escHtml(sv.fileName)}・${escHtml(sv.sheetName)} 分頁</span>
+    </div>` : "";
+  const steps = st.key === "ok" ? "" : `
+    <div class="rsteps">
+      <div class="ttl">先檢查這幾件事</div>
+      <ol>
+        <li>錢盒再點一次</li>
+        <li>進貨有沒有漏記（現金付的）</li>
+        <li>總額、Line、Uber 有沒有打錯</li>
+        <li class="last">都沒問題，請回報老闆！</li>
+      </ol>
+    </div>`;
+  const btns = st.key === "ok"
+    ? `<button class="rbtn-main" data-r="close">好，關閉</button>`
+    : `<button class="rbtn-ghost" data-r="edit" data-target="sec-cashbox">回去修改</button><button class="rbtn-main" data-r="close">我知道了</button>`;
+  openResultSheet(`
+    <div class="rtop"><span>${escHtml(resultDateText())}　已送出</span><span class="rclose" data-r="close">✕</span></div>
+    <div class="rhero">
+      <div class="rstatus">${st.label}</div>
+      <div class="rbig"><small>${st.big}</small>${st.amt}</div>
+      ${st.note ? `<div class="rnote">${st.note}</div>` : ""}
+    </div>
+    <div class="rrows">
+      <div class="rrow em"><span class="k">現金應有</span><span class="v">${fmtMoney(data.cashAmount)}</span></div>
+      <div class="rrow em"><span class="k">錢盒實收</span><span class="v">${fmtMoney(data.cashboxTotal)}</span></div>
+    </div>
+    <div class="rgap"></div>
+    <div class="rrows">
+      <div class="rrow"><span class="k">今日營業額</span><span class="v">${fmtMoney(d.totalAmount)}・${Number(d.totalUnits)||0} 單</span></div>
+      <div class="rrow"><span class="k">今日進貨</span><span class="v">${pCount ? pCount + " 筆・" + fmtMoney(pSum) : "無"}</span></div>
+      <div class="rrow"><span class="k">填表人</span><span class="v">${escHtml(filler || "—")}</span></div>
+    </div>
+    ${savedLine}
+    ${steps}
+    <div class="rbtns">${btns}</div>
+  `, st.color);
+}
+
+function showMissingSheet(missing){
+  openResultSheet(`
+    <div class="rtop"><span>${escHtml(resultDateText())}　尚未送出</span><span class="rclose" data-r="close">✕</span></div>
+    <div class="rhero">
+      <div class="rstatus">還沒填完</div>
+      <div class="rbig"><small>還有</small>${missing.length}<small style="margin:0 0 0 6px;">項</small></div>
+      <div class="rnote">填完再按一次「全部送出」</div>
+    </div>
+    <div class="rsteps rmiss" style="margin-top:0;">
+      <ol>${missing.map(m => `<li>${escHtml(m)}</li>`).join("")}</ol>
+    </div>
+    <div class="rbtns"><button class="rbtn-main" data-r="close">回去填寫</button></div>
+  `, "var(--accent)");
+}
+
 document.getElementById("submitBtn").addEventListener("click", submitEntry);
 async function submitEntry(){
   if (submitInFlight) return;
   const missing = validateAllFilled();
   if (missing.length > 0) {
-    alert("還有欄位沒填寫，請填寫完再送出：\n\n・" + missing.join("\n・"));
+    showMissingSheet(missing);
     return;
   }
   const btn = document.getElementById("submitBtn");
@@ -973,7 +1360,7 @@ async function submitEntry(){
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" }, // 避免瀏覽器預檢請求，Apps Script 不支援 OPTIONS
-      body: JSON.stringify(Object.assign({}, state, { section: "all" }))
+      body: JSON.stringify(Object.assign({}, state, { section: "all", synced: undefined }))
     });
     const data = await res.json();
     submitInFlight = false;
@@ -983,21 +1370,14 @@ async function submitEntry(){
       btn.textContent = "全部送出";
       return;
     }
-    const badge = document.getElementById("statusBadge");
-    badge.querySelector(".txt").textContent = "已送出";
-    badge.className = "statuscorner";
-    const reconcile = document.getElementById("reconcileBadge");
-    reconcile.textContent = data.message;
-    reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
-    document.getElementById("footerHint").textContent =
-      "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒實收 " + fmtMoney(data.cashboxTotal);
+    markSynced(SECTIONS);
+    saveDraft(); // 會順便把右上角改成「已送出」、收起「還沒送出」提示
+    updateReconcileBadge(data);
     // 「已送出」會一直顯示，不會過幾秒自動跳回「全部送出」造成誤會；
     // 只要再按一次（或改了內容再送）就會重新走一次送出流程。
     btn.textContent = "已送出";
     // 最後跳出現金核對結果，讓結帳的人清楚知道現在的狀況
-    alert("已送出！\n\n" + data.message +
-      "\n現金應有：" + fmtMoney(data.cashAmount) +
-      "\n錢盒實收：" + fmtMoney(data.cashboxTotal));
+    showSubmitResult(data);
   } catch (err) {
     submitInFlight = false;
     setAllSubmitButtonsDisabled(false);
@@ -1014,7 +1394,6 @@ const SECTION_LABELS = {
   handover: "交接紀錄"
 };
 // 記住每個分頁送出鈕原本的樣子，「清除」的時候要把按鈕還原成這個狀態
-const sendBtnOriginalHTML = {};
 document.querySelectorAll(".sendbtn-text[data-section]").forEach(btn => {
   sendBtnOriginalHTML[btn.dataset.section] = btn.innerHTML;
   btn.addEventListener("click", () => submitSection(btn.dataset.section, btn));
@@ -1028,7 +1407,7 @@ async function submitSection(section, btn){
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(Object.assign({}, state, { section: section }))
+      body: JSON.stringify(Object.assign({}, state, { section: section, synced: undefined }))
     });
     const data = await res.json();
     submitInFlight = false;
@@ -1038,13 +1417,11 @@ async function submitSection(section, btn){
       btn.innerHTML = sendBtnOriginalHTML[section];
       return;
     }
+    markSynced([section]);
+    saveDraft(); // 按鈕會依狀態自動顯示「已送出」
     // 現金相關欄位有回傳核對結果時，順便更新底部狀態
-    if (section === "cashbox" && data.message !== undefined) {
-      const reconcile = document.getElementById("reconcileBadge");
-      reconcile.textContent = data.message;
-      reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
-      document.getElementById("footerHint").textContent =
-        "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒實收 " + fmtMoney(data.cashboxTotal);
+    if ((section === "cashbox" || section === "revenue") && data.diff !== undefined) {
+      updateReconcileBadge(data);
     }
     // 已送出的狀態會一直停留在按鈕上，不會過幾秒又跳回「送出」；
     // 這一段內容如果之後又被清除或重新編輯，按鈕會自動變回原本的「送出」樣子。
@@ -1114,11 +1491,13 @@ function switchDay(deltaDays){
   d.setDate(d.getDate() + deltaDays); // setDate 會自動正確處理跨月／跨年
   const newDay = d.getDate(), newMonth = d.getMonth() + 1, newYear = d.getFullYear();
   const draft = loadDraft(newYear + "-" + newMonth + "-" + newDay);
-  state = draft || emptyDayState(newDay, newMonth, newYear);
+  state = draft || freshDayState(newDay, newMonth, newYear);
   renderAll();
-  // 這台裝置在這一天還沒有暫存過內容時，安靜地去雲端把已經送出的資料讀回來顯示
-  // （其他裝置已經填過的東西，切過去這天就會直接看到，而不是空白）
-  if (!draft) syncFromServer(true);
+  updateUnsentBar();
+  resetReconcileBadge(); // 底部的現金核對是上一天的結果，換天就先清掉
+  // 每次切到某一天都去試算表讀最新資料：已送出的段落會更新成試算表上的內容，
+  // 這台平板還沒送出的段落則保留，不會被蓋掉
+  syncFromServer(true);
 }
 
 function renderAll(){
@@ -1157,8 +1536,9 @@ function renderHandover(){
 // ---------- 初始化 ----------
 async function init(){
   const draft = loadDraft(draftKey(state));
-  if (draft) state = draft;
+  state = draft || freshDayState(state.day, state.month, state.year);
   renderAll(); // 先用內建清單畫面，網路狀況不好也能馬上操作
+  updateUnsentBar();
 
   try {
     const res = await fetch(CONFIG.API_URL + "?action=vendors");
@@ -1166,17 +1546,38 @@ async function init(){
     if (data.ok && data.vendors) {
       if (data.vendors["銷貨成本"] && data.vendors["銷貨成本"].length) vendorsByCategory["銷貨成本"] = data.vendors["銷貨成本"];
       if (data.vendors["固定成本"] && data.vendors["固定成本"].length) vendorsByCategory["固定成本"] = data.vendors["固定成本"];
+      if (data.stores) storesByVendor = data.stores;
       renderVendorChips();
     }
   } catch(e) {
     // 離線或還沒設定好網址時，用內建的清單，不影響操作
   }
 
-  // 這台裝置在今天還沒有暫存過內容時，安靜地去雲端把已經送出的資料讀回來顯示，
-  // 這樣今天不管用哪一台裝置打開，看到的都是雲端上最新的那份。
-  if (!draft) syncFromServer(true);
+  // 打開頁面時也去試算表讀最新資料（還沒送出的段落會保留）
+  syncFromServer(true);
 }
 init();
+
+// ---------- 平板整晚沒關頁面：隔天打開時自動跳到「今天」，避免填到昨天的分頁 ----------
+let lastTodayKey = draftKey(todayParts());
+function checkNewDay(){
+  const t = todayParts();
+  const key = draftKey(t);
+  if (key === lastTodayKey) return;
+  const wasOnOldToday = draftKey(state) === lastTodayKey;
+  lastTodayKey = key;
+  if (!wasOnOldToday) return; // 員工自己切到別天在看，就不要硬跳
+  saveDraft();
+  const draft = loadDraft(key);
+  state = draft || freshDayState(t.day, t.month, t.year);
+  renderAll();
+  updateUnsentBar();
+  resetReconcileBadge();
+  syncFromServer(true);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkNewDay(); });
+window.addEventListener("focus", checkNewDay);
+setInterval(checkNewDay, 60 * 1000);
 </script>
 </body>
 </html>
