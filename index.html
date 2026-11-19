@@ -895,14 +895,14 @@ async function submitEntry(){
     reconcile.textContent = data.message;
     reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
     document.getElementById("footerHint").textContent =
-      "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
+      "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒實收 " + fmtMoney(data.cashboxTotal);
     // 「已送出」會一直顯示，不會過幾秒自動跳回「全部送出」造成誤會；
     // 只要再按一次（或改了內容再送）就會重新走一次送出流程。
     btn.textContent = "已送出";
     // 最後跳出現金核對結果，讓結帳的人清楚知道現在的狀況
     alert("已送出！\n\n" + data.message +
       "\n現金應有：" + fmtMoney(data.cashAmount) +
-      "\n錢盒總額：" + fmtMoney(data.cashboxTotal));
+      "\n錢盒實收：" + fmtMoney(data.cashboxTotal));
   } catch (err) {
     submitInFlight = false;
     setAllSubmitButtonsDisabled(false);
@@ -949,7 +949,7 @@ async function submitSection(section, btn){
       reconcile.textContent = data.message;
       reconcile.className = "badge " + (data.diff === 0 ? "" : (data.diff > 0 ? "" : "warn"));
       document.getElementById("footerHint").textContent =
-        "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒總額 " + fmtMoney(data.cashboxTotal);
+        "現金應有 " + fmtMoney(data.cashAmount) + "，錢盒實收 " + fmtMoney(data.cashboxTotal);
     }
     // 已送出的狀態會一直停留在按鈕上，不會過幾秒又跳回「送出」；
     // 這一段內容如果之後又被清除或重新編輯，按鈕會自動變回原本的「送出」樣子。
