@@ -145,6 +145,21 @@
   .keys button{padding:16px 0;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:18px;font-weight:700;color:var(--ink);}
   .keys button.confirm{background:var(--accent);color:var(--card);border:none;font-size:15px;}
   .keys button.clear{background:var(--card);color:var(--sub);font-size:13px;}
+  /* 數字鍵盤：支出／收入切換（只有今日進貨會出現） */
+  .signrow{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .signrow.show{display:grid;}
+  .signrow button{padding:10px 0;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--sub);font-size:14px;font-weight:700;}
+  .signrow button.on{background:var(--ochre);border-color:var(--ochre);color:var(--card);}
+  .signrow button.on.income{background:var(--good);border-color:var(--good);}
+  .sheet .display.income{color:var(--good);}
+  .pitem .amt.income{color:var(--good);}
+  /* 自行輸入項目表單 */
+  .formfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+  .formfield label{font-size:12.5px;font-weight:700;color:var(--sub);}
+  .formfield input{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--soft);font-size:15px;color:var(--ink);}
+  .formfield input:focus{outline:none;border-color:var(--accent);background:var(--card);}
+  .formerr{font-size:12px;color:#B3452C;margin:-6px 0 10px;display:none;}
+  .formbtn{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:var(--card);font-size:15px;font-weight:700;}
   input,textarea{font-family:inherit;}
 </style>
 </head>
@@ -196,7 +211,7 @@
         <div class="chips" id="vendorChips"></div>
         <div class="divider"></div>
         <div class="plist" id="purchaseList"></div>
-        <div class="hint">點項目按鈕輸入金額，會問要不要加備註，自動加入下面清單；點清單項目右邊 × 可以刪除。</div>
+        <div class="hint">點項目按鈕輸入金額，會問要不要加備註，自動加入下面清單；員工購買等收入，在金額畫面切到「收入（負數）」。點清單項目右邊 × 可以刪除。</div>
       </div>
     </div>
 
@@ -330,6 +345,10 @@
       <div class="lbl" id="sheetLabel">輸入數字</div>
       <div class="lbl" id="sheetClose" style="cursor:pointer;">✕</div>
     </div>
+    <div class="signrow" id="signRow">
+      <button type="button" data-sign="1">支出</button>
+      <button type="button" data-sign="-1">收入（負數）</button>
+    </div>
     <div class="display" id="sheetDisplay">0</div>
     <div class="keys">
       <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
@@ -338,6 +357,30 @@
       <button class="clear" data-k="clear">清除</button><button data-k="0">0</button>
       <button class="confirm" data-k="confirm">確認</button>
     </div>
+  </div>
+</div>
+
+<!-- 自行輸入項目：一次填 項目／店家／備註，再接數字鍵盤輸入金額 -->
+<div class="sheet-backdrop" id="customSheetBackdrop">
+  <div class="sheet">
+    <div class="head">
+      <div class="lbl">自行輸入項目</div>
+      <div class="lbl" id="customSheetClose" style="cursor:pointer;">✕</div>
+    </div>
+    <div class="formfield">
+      <label for="customVendor">項目（必填）</label>
+      <input id="customVendor" type="text" placeholder="例如：員工購買">
+    </div>
+    <div class="formerr" id="customErr">請先填項目名稱</div>
+    <div class="formfield">
+      <label for="customDetail">店家</label>
+      <input id="customDetail" type="text" placeholder="可留空">
+    </div>
+    <div class="formfield">
+      <label for="customNote">備註</label>
+      <input id="customNote" type="text" placeholder="可留空">
+    </div>
+    <button type="button" class="formbtn" id="customNext">下一步：輸入金額</button>
   </div>
 </div>
 
@@ -549,7 +592,7 @@ async function clearSection(section, btn){
   }
 }
 
-function fmtMoney(n){ return "$" + Number(n||0).toLocaleString(); }
+function fmtMoney(n){ const v = Number(n||0); return (v < 0 ? "−$" : "$") + Math.abs(v).toLocaleString(); }
 
 // ---------- 畫面：今日營業額卡片 ----------
 function renderSlots(){
@@ -671,27 +714,57 @@ function renderVendorChips(){
   const other = document.createElement("div");
   other.className = "chip dashed";
   other.textContent = "+ 自行輸入項目";
-  other.addEventListener("click", () => {
-    const name = prompt("請輸入項目名稱：");
-    if (name && name.trim()) openPurchaseEntry(name.trim(), currentPurchaseCat);
-  });
+  other.addEventListener("click", openCustomItemForm);
   wrap.appendChild(other);
 }
 
-function openPurchaseEntry(vendor, category){
+// extra 有值 = 從「自行輸入項目」表單來的（已經填好店家、備註），就不再跳備註視窗
+function openPurchaseEntry(vendor, category, extra){
   openKeypad({
     label: vendor + " · 金額",
     initial: 0,
     prefix: "$",
+    allowNegative: true, // 顯示「支出／收入（負數）」切換，例如員工購買店內食品記成負數
     onConfirm(amount){
-      if (amount <= 0) return;
-      const note = (prompt("備註（可留空，直接確定即可）：", "") || "").trim();
-      state.purchases.push({ vendor, category, detail:"", note, amount });
+      if (amount === 0) return;
+      const detail = extra ? extra.detail : "";
+      const note = extra ? extra.note : (prompt("備註（可留空，直接確定即可）：", "") || "").trim();
+      state.purchases.push({ vendor, category, detail, note, amount });
       renderPurchaseList();
       saveDraft();
     }
   });
 }
+
+// ---------- 自行輸入項目表單 ----------
+function openCustomItemForm(){
+  ["customVendor","customDetail","customNote"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("customErr").style.display = "none";
+  document.getElementById("customSheetBackdrop").classList.add("open");
+  setTimeout(() => document.getElementById("customVendor").focus(), 50);
+}
+function closeCustomItemForm(){
+  document.getElementById("customSheetBackdrop").classList.remove("open");
+}
+document.getElementById("customSheetClose").addEventListener("click", closeCustomItemForm);
+document.getElementById("customSheetBackdrop").addEventListener("click", (e) => {
+  if (e.target.id === "customSheetBackdrop") closeCustomItemForm();
+});
+document.getElementById("customVendor").addEventListener("input", () => {
+  document.getElementById("customErr").style.display = "none";
+});
+document.getElementById("customNext").addEventListener("click", () => {
+  const vendor = document.getElementById("customVendor").value.trim();
+  if (!vendor) {
+    document.getElementById("customErr").style.display = "block";
+    document.getElementById("customVendor").focus();
+    return;
+  }
+  const detail = document.getElementById("customDetail").value.trim();
+  const note = document.getElementById("customNote").value.trim();
+  closeCustomItemForm();
+  openPurchaseEntry(vendor, currentPurchaseCat, { detail, note });
+});
 
 function renderPurchaseList(){
   const wrap = document.getElementById("purchaseList");
@@ -703,10 +776,10 @@ function renderPurchaseList(){
     row.innerHTML = `
       <div>
         <div class="name">${p.vendor}${p.detail ? " · " + p.detail : ""}</div>
-        <div class="cat">${cat}${p.note ? " · " + p.note : ""}</div>
+        <div class="cat">${cat}${Number(p.amount) < 0 ? " · 收入" : ""}${p.note ? " · " + p.note : ""}</div>
       </div>
       <div style="display:flex;align-items:center;">
-        <div class="amt">${fmtMoney(p.amount)}</div>
+        <div class="amt${Number(p.amount) < 0 ? " income" : ""}">${fmtMoney(p.amount)}</div>
         <button class="del">✕</button>
       </div>
     `;
@@ -794,16 +867,38 @@ function openCashboxStep(index, chained){
 
 // ---------- 共用數字鍵盤 ----------
 let keypadCtx = null;
-function openKeypad({label, initial, prefix, suffix, onConfirm}){
-  keypadCtx = { value: String(initial || ""), onConfirm, prefix: prefix||"", suffix: suffix||"" };
+function openKeypad({label, initial, prefix, suffix, onConfirm, allowNegative}){
+  const init = Number(initial || 0);
+  keypadCtx = { value: init ? String(Math.abs(init)) : "", onConfirm, prefix: prefix||"", suffix: suffix||"",
+                sign: init < 0 ? -1 : 1, allowNegative: !!allowNegative };
   document.getElementById("sheetLabel").textContent = label;
+  document.getElementById("signRow").classList.toggle("show", keypadCtx.allowNegative);
+  updateSignButtons();
   updateKeypadDisplay();
   document.getElementById("sheetBackdrop").classList.add("open");
 }
 function updateKeypadDisplay(){
   const v = keypadCtx.value === "" ? "0" : keypadCtx.value;
-  document.getElementById("sheetDisplay").textContent = keypadCtx.prefix + Number(v).toLocaleString() + keypadCtx.suffix;
+  const neg = keypadCtx.sign < 0;
+  const el = document.getElementById("sheetDisplay");
+  el.textContent = (neg ? "−" : "") + keypadCtx.prefix + Number(v).toLocaleString() + keypadCtx.suffix;
+  el.classList.toggle("income", neg);
 }
+function updateSignButtons(){
+  document.querySelectorAll("#signRow button").forEach(b => {
+    const on = Number(b.dataset.sign) === keypadCtx.sign;
+    b.classList.toggle("on", on);
+    b.classList.toggle("income", on && keypadCtx.sign < 0);
+  });
+}
+document.querySelectorAll("#signRow button").forEach(b => {
+  b.addEventListener("click", () => {
+    if (!keypadCtx) return;
+    keypadCtx.sign = Number(b.dataset.sign);
+    updateSignButtons();
+    updateKeypadDisplay();
+  });
+});
 function closeKeypad(){
   document.getElementById("sheetBackdrop").classList.remove("open");
   keypadCtx = null;
@@ -818,7 +913,7 @@ document.querySelectorAll(".keys button").forEach(btn => {
     const k = btn.dataset.k;
     if (k === "clear") { keypadCtx.value = ""; updateKeypadDisplay(); return; }
     if (k === "confirm") {
-      const val = Number(keypadCtx.value || 0);
+      const val = Number(keypadCtx.value || 0) * (keypadCtx.allowNegative ? keypadCtx.sign : 1);
       const cb = keypadCtx.onConfirm;
       closeKeypad();
       cb(val);
